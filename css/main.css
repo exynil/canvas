@@ -11,7 +11,8 @@ html {
 }
 
 #main img {
-	height: 120px;
+	height: auto;
+	width: 100%;
 }
 
 #main {
