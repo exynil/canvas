@@ -38,7 +38,8 @@ canvas.addEventListener('click', function () {
 })
 
 class Particle {
-	constructor(radius, mass, speed, acceleration, x, y, color) {
+	constructor(id, radius, mass, speed, acceleration, x, y, color) {
+		this.id = id;
 		this.radius = radius;
 		this.mass = mass;
 		this.speed = speed;
@@ -51,6 +52,7 @@ class Particle {
 		};
 		this.color = color;
 		this.opacity = 0;
+		this.shadow = false;
 	};
 
 	Update(particles){
@@ -87,9 +89,11 @@ class Particle {
 
 		if (getDistance(mouse.x, mouse.y, this.x, this.y) < 120 && this.radius < 20) {
 			this.radius += 0.5;
+			this.shadow = true;
 		} else if (this.radius > 0.5) {
 			this.radius -= 0.5;
 			this.radius = Math.max(0, this.radius);
+			this.shadow = false;
 		}
 
 		this.x += this.velocity.x * this.speed;
@@ -98,6 +102,15 @@ class Particle {
 
 	Draw() {
 		ctx.beginPath();
+		if (this.shadow) {
+			ctx.shadowBlur = 20;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 0;
+			ctx.shadowColor = this.color;
+		}
+		else {
+			ctx.shadowBlur = 0;
+		}
 		ctx.strokeStyle = this.color;
 		ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
 		ctx.stroke();
@@ -110,7 +123,7 @@ function init() {
 	particles = [];
 
 	for (let i = 0; i < 1000; i++) {
-		const radius = 0;
+		const radius = 1;
 		const color = randomColor(colors);
 		const mass = 1;
 		const speed = 3;
@@ -131,7 +144,7 @@ function init() {
 			}
 		}
 
-		particles.push(new Particle(radius, mass, speed, acceleration, x, y, color));
+		particles.push(new Particle(i, radius, mass, speed, acceleration, x, y, color));
 	}
 }
 

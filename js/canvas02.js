@@ -38,7 +38,8 @@ canvas.addEventListener('click', function () {
 })
 
 class Particle {
-	constructor(radius, mass, speed, acceleration, x, y, color) {
+	constructor(id, radius, mass, speed, acceleration, x, y, color) {
+		this.id = id;
 		this.radius = radius;
 		this.mass = mass;
 		this.speed = speed;
@@ -131,7 +132,7 @@ function init() {
 			}
 		}
 
-		particles.push(new Particle(radius, mass, speed, acceleration, x, y, color));
+		particles.push(new Particle(i, radius, mass, speed, acceleration, x, y, color));
 	}
 }
 
