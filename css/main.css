@@ -1,0 +1,19 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+body {
+	background: #f1f1f1;
+}
+
+html {
+	overflow: hidden;
+}
+
+#main img {
+	height: 120px;
+}
+
+#main {
+	margin-top: 1rem;
+}
