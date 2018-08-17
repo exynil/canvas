@@ -1,10 +1,6 @@
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var colors = ['#00FF7F', '#7B68EE', '#00FFFF'];
-var mouse = {
-	x: -999,
-	y: -999
-};
 var particles;
 
 canvas.width = innerWidth;
@@ -25,11 +21,6 @@ addEventListener('keydown', function (event) {
 		location.href = '../index.html';
 	}
 });
-
-// canvas.addEventListener('mouseleave', function(event) {
-// 	mouse.x = -999;
-// 	mouse.y = -999;
-// });
 
 class Particle {
 	constructor(id, radius, mass, speed, acceleration, x, y, color) {
@@ -75,15 +66,6 @@ class Particle {
 		if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
 			this.velocity.y = -this.velocity.y;
 		}
-
-		// if (getDistance(mouse.x, mouse.y, this.x, this.y) < 120 && this.radius < 20) {
-		// 	// this.radius += 0.5;
-		// 	this.shadow = true;
-		// } else if (this.radius > 0.5) {
-		// 	this.radius -= 0.5;
-		// 	this.radius = Math.max(0, this.radius);
-		// 	this.shadow = false;
-		// }
 
 		this.x += this.velocity.x * this.speed;
 		this.y += this.velocity.y * this.speed;
