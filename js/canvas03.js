@@ -62,7 +62,7 @@ class Particle {
 				ctx.beginPath();
 				ctx.moveTo(this.x, this.y);
 				ctx.lineTo(particles[i].x, particles[i].y);
-				ctx.strokeStyle = '#FF3A00';
+				ctx.strokeStyle = '#00DAFF';
 				ctx.lineWidth = 0.5;
 				ctx.stroke();
 			}
