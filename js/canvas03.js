@@ -26,16 +26,10 @@ addEventListener('keydown', function (event) {
 	}
 });
 
-canvas.addEventListener('mouseleave', function(event) {
-	mouse.x = -999;
-	mouse.y = -999;
-});
-
-canvas.addEventListener('click', function () {
-	for (let i = 0; i < particles.length; i++) {
-		particles[i].radius = 0;
-	}
-})
+// canvas.addEventListener('mouseleave', function(event) {
+// 	mouse.x = -999;
+// 	mouse.y = -999;
+// });
 
 class Particle {
 	constructor(id, radius, mass, speed, acceleration, x, y, color) {
@@ -64,15 +58,11 @@ class Particle {
 				resolveCollision(this, particles[i]);
 			}
 
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 20 && this.id < i) {
-				let grd = ctx.createLinearGradient(this.x, this.y, particles[i].x, particles[i].y);
-				grd.addColorStop(0, this.color);
-				grd.addColorStop(1, particles[i].color);			
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 50 && this.id < i) {	
 				ctx.beginPath();
 				ctx.moveTo(this.x, this.y);
 				ctx.lineTo(particles[i].x, particles[i].y);
-				ctx.strokeStyle = grd;
-				ctx.fill();
+				ctx.strokeStyle = '#FF3A00';
 				ctx.lineWidth = 0.5;
 				ctx.stroke();
 			}
@@ -86,14 +76,14 @@ class Particle {
 			this.velocity.y = -this.velocity.y;
 		}
 
-		if (getDistance(mouse.x, mouse.y, this.x, this.y) < 120 && this.radius < 20) {
-			this.radius += 0.5;
-			this.shadow = true;
-		} else if (this.radius > 0.5) {
-			this.radius -= 0.5;
-			this.radius = Math.max(0, this.radius);
-			this.shadow = false;
-		}
+		// if (getDistance(mouse.x, mouse.y, this.x, this.y) < 120 && this.radius < 20) {
+		// 	// this.radius += 0.5;
+		// 	this.shadow = true;
+		// } else if (this.radius > 0.5) {
+		// 	this.radius -= 0.5;
+		// 	this.radius = Math.max(0, this.radius);
+		// 	this.shadow = false;
+		// }
 
 		this.x += this.velocity.x * this.speed;
 		this.y += this.velocity.y * this.speed;
@@ -101,9 +91,9 @@ class Particle {
 
 	Draw() {
 		ctx.beginPath();
-		ctx.strokeStyle = this.color;
+		ctx.fillStyle = this.color;
 		ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-		ctx.stroke();
+		ctx.fill();
 		ctx.closePath();
 	}
 }
@@ -112,9 +102,10 @@ class Particle {
 function init() {
 	particles = [];
 
-	for (let i = 0; i < 1000; i++) {
-		const radius = 1;
-		const color = randomColor(colors);
+	for (let i = 0; i < 250; i++) {
+		const radius = 5;
+		// const color = randomColor(colors);
+		const color = 'white';
 		const mass = 1;
 		const speed = 3;
 		const acceleration = 0.1;
