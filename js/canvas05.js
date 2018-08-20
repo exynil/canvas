@@ -1,6 +1,7 @@
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var colors = ['#00FF7F', '#7B68EE', '#00FFFF'];
+var shieldColors = ['#E36174', '#20FBEF'];
 var particles = [];
 var mouse = {
 	x: -999,
@@ -8,13 +9,14 @@ var mouse = {
 };
 var id = 0;
 
-var isDown;
-var requestId;
+// var isDown;
+// var requestId;
 
 var wDown;
 var sDown;
 var arrowUpDown;
 var arrowDownDown;
+var animationId;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -35,12 +37,12 @@ addEventListener('mousemove', function (event) {
 	mouse.y = event.clientY;
 });
 
-canvas.onmousedown = function(event){
-	isDown = true;
-	Generate();
-};
+// canvas.onmousedown = function(event) {
+// 	isDown = true;
+// 	Generate();
+// };
 
-canvas.onmouseup = function(){
+canvas.onmouseup = function() {
 	isDown = false;
 	cancelAnimationFrame(requestId);
 	// console.log('Анимация отключена!');
@@ -78,32 +80,6 @@ addEventListener('keyup', function (event) {
 	}
 });
 
-function Generate () {
-	requestId = requestAnimationFrame(Generate);
-	if (isDown) {
-		id++;
-		const radius = randomIntFromRange(15, 25);
-		const color = randomColor(colors);
-		const mass = 1;
-		const speed = randomIntFromRange(2, 4);
-		const x = mouse.x;
-		const y = mouse.y;
-		const lineWidth = 0.5;
-		particles.push(new Particle(id, x, y, radius, mass, speed, color, lineWidth));
-		if (particles.length > 100) {
-			while (particles.length > 100) {
-				particles.shift();
-			}
-
-			for (let i = 0; i < particles.length; i++) {
-				particles[i].id = i;
-			}
-		}
-
-	}
-	// console.log('Анимация работает!');
-}
-
 class Particle {
 	constructor(id, x, y, radius, mass, speed, acceleration, color, lineWidth, isShield) {
 		this.id = id;
@@ -125,61 +101,76 @@ class Particle {
 
 	Update(particles){
 		this.Draw();
-		for (let i = 2; i < particles.length; i++) {
-			if (this === particles[i]) continue;
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
-				resolveCollision(this, particles[i]);
+		if (this.isShield == false) {
+			for (let i = 0; i < particles.length; i++) {
+				if (this === particles[i]) continue;
+				if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
+					if (i == 0 || i == 1) {
+						if (this.x - this.radius <= 10 || this.x + this.radius >= canvas.width - 10) {
+							this.velocity.x = -this.velocity.x;
+							this.velocity.y = -this.velocity.y;
+						}
+					}
+					else {
+						resolveCollision(this, particles[i]);
+					}
+				}
 			}
 
-			// if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 100 && this.id > i) {	
-			// 	ctx.beginPath();
-			// 	ctx.lineCap = 'round';
-			// 	ctx.moveTo(this.x, this.y);
-			// 	ctx.lineTo(particles[i].x, particles[i].y);
-			// 	ctx.strokeStyle = this.color;
-			// 	ctx.lineWidth = 0.5;
-			// 	ctx.stroke();
-			// 	ctx.closePath();
-			// }
+			if (this.x + this.radius <= 0 && this.isShield == false) {
+				particles[1].count++;
+			} else if (this.x - this.radius >= innerWidth && this.isShield == false) {
+				particles[0].count++;
+			}
+
+			if ((this.x + this.radius <= 0 || this.x - this.radius >= innerWidth) && this.isShield == false) {
+				for (let i = 0; i < particles.length; i++) {
+					if (particles[i].id == this.id) {
+						particles.splice(i, 1);
+						break;
+					}
+				}
+				return;
+			}
+
+
+			if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
+				this.velocity.y = -this.velocity.y;
+			}
+
+			if (this.isShield == false) {
+				this.x += this.velocity.x * this.speed;
+				this.y += this.velocity.y * this.speed;
+			}
 		}
 
-		if (this.x - this.radius <= 0 || this.x + this.radius >= innerWidth) {
-			this.velocity.x = -this.velocity.x;
-		}
-
-		if (this.x - this.radius <= 0 && this.isShield == false) {
-			particles[1].count++;
-		} else if (this.x + this.radius >= innerWidth && this.isShield == false) {
-			particles[0].count++;
-		}
-
-		if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
-			this.velocity.y = -this.velocity.y;
-		}
-
-		if (this.isShield == false) {
-			this.x += this.velocity.x * this.speed;
-			this.y += this.velocity.y * this.speed;
+		for (let i = 0; i < particles.length; i++) {
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < canvas.width / 2 && this.id < i) {	
+				ctx.beginPath();
+				ctx.moveTo(this.x, this.y);
+				ctx.lineWidth = 1;
+				ctx.setLineDash([1, 15]);
+				ctx.lineTo(particles[i].x, particles[i].y);
+				ctx.strokeStyle = this.color;
+				ctx.stroke();
+				ctx.closePath();
+			}
 		}
 	}
 
 	Draw() {
 		if (this.isShield) {
 			ctx.beginPath();
-			ctx.lineWidth = this.lineWidth;
+			ctx.lineWidth = 1;
 			ctx.strokeStyle = this.color;
-			ctx.arc(this.x, this.y, this.radius - 15, Math.PI * 2, false);
+			ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
 			ctx.stroke();
 			ctx.closePath();
 
 			ctx.beginPath();
-			ctx.lineWidth = this.lineWidth;
 			ctx.fillStyle = this.color;
-			ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-			ctx.arc(this.x, this.y, this.radius - 10, Math.PI * 2, false);
-			ctx.fill('evenodd');
+			ctx.fillRect(this.x - 10, this.y - this.radius, 20, 200);
 			ctx.closePath();
-
 
 			ctx.beginPath();
 			ctx.font = "30pt Arial";
@@ -194,8 +185,6 @@ class Particle {
 			ctx.beginPath();
 			ctx.save();
 			ctx.shadowBlur = 10;
-			ctx.shadowOffsetX = 0;
-			ctx.shadowOffsetY = 0;
 			ctx.shadowColor = this.color;
 			ctx.lineWidth = this.lineWidth;
 			ctx.fillStyle = this.color;
@@ -209,11 +198,11 @@ class Particle {
 }
 
 function init () {
-	for (let i = 0; i < 6; i++) {
+	for (let i = 0; i < 10; i++) {
 		let radius = 20;
 		let color = randomColor();
 		let mass = 1;
-		let speed = 15;
+		let speed = 10;
 		let acceleration = 0.1;
 		let x;
 		let y;
@@ -221,12 +210,14 @@ function init () {
 		if (i == 0) {
 			radius = 100;
 			isShield = true;
+			color = shieldColors[i];
 			x = 0;
 			y = canvas.height / 2;
 		}
 		else if (i == 1) {
 			radius = 100;
 			isShield = true;
+			color = shieldColors[i];
 			x = canvas.width;
 			y = canvas.height / 2;
 		} else {
@@ -253,7 +244,7 @@ function init () {
 init();
 
 function animate() {
-	requestAnimationFrame(animate);
+	animationId = requestAnimationFrame(animate);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	for (let i = 0; i < particles.length; i++) {
@@ -264,28 +255,28 @@ function animate() {
 	if (sDown) {
 		particles[0].y += 5 + particles[0].acceleration;
 		particles[0].acceleration += 0.5;
-		if (particles[0].y > canvas.height) {
-			particles[0].y = canvas.height;
+		if (particles[0].y > canvas.height - particles[0].radius) {
+			particles[0].y = canvas.height - particles[0].radius;
 		}
 	} else if (wDown) {
 		particles[0].y -= 5 - particles[0].acceleration;
 		particles[0].acceleration -= 0.5;
-		if (particles[0].y < 0) {
-			particles[0].y = 0;
+		if (particles[0].y < particles[0].radius) {
+			particles[0].y = particles[0].radius;
 		}
 	}
 
 	if (arrowDownDown) {
 		particles[1].y += 5 + particles[1].acceleration;
 		particles[1].acceleration += 0.5;
-		if (particles[1].y > canvas.height) {
-			particles[1].y = canvas.height;
+		if (particles[1].y > canvas.height - particles[1].radius) {
+			particles[1].y = canvas.height - particles[1].radius;
 		}
 	} else if (arrowUpDown) {
 		particles[1].y -= 5 - particles[1].acceleration;
 		particles[1].acceleration -= 0.5;
-		if (particles[1].y < 0) {
-			particles[1].y = 0;
+		if (particles[1].y < particles[1].radius) {
+			particles[1].y = particles[1].radius;
 		}
 	}
 }
