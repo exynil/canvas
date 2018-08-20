@@ -73,7 +73,7 @@ class Particle {
 		ctx.fill();
 		ctx.closePath();
 	}
-}
+};
 
 
 function init() {
@@ -104,7 +104,7 @@ function init() {
 
 		particles.push(new Particle(i, radius, mass, speed, acceleration, x, y, color));
 	}
-}
+};
 
 init();
 
@@ -115,24 +115,24 @@ function animate() {
 	particles.forEach(particle => {
 		particle.Update(particles);
 	});
-}
+};
 
 animate();
 
 function randomIntFromRange (min, max) {
 	return Math.floor(Math.random() * (max - min) + min);
-}
+};
 
 function randomColor(colors) {
 	return colors[Math.floor(Math.random() * colors.length)];
-}
+};
 
 function getDistance (x1, y1, x2, y2) {
 	let xDistance = x2 - x1;
 	let yDistance = y2 - y1;
 
 	return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
-}
+};
 
 function rotate(velocity, angle) {
 	const rotatedVelocities = {
@@ -141,7 +141,7 @@ function rotate(velocity, angle) {
 	};
 
 	return rotatedVelocities;
-}
+};
 
 function resolveCollision(particle, otherParticle) {
 	const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
@@ -178,4 +178,4 @@ function resolveCollision(particle, otherParticle) {
 		otherParticle.velocity.x = vFinal2.x;
 		otherParticle.velocity.y = vFinal2.y;
 	}
-}
+};

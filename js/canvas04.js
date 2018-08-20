@@ -135,7 +135,7 @@ class Particle {
 		ctx.fill('evenodd');
 		ctx.closePath();
 	}
-}
+};
 
 function animate() {
 	requestAnimationFrame(animate);
@@ -144,7 +144,7 @@ function animate() {
 	particles.forEach(particle => {
 		particle.Update(particles);
 	});
-}
+};
 
 animate();
 

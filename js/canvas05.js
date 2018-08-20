@@ -3,15 +3,6 @@ var ctx = canvas.getContext('2d');
 var colors = ['#00FF7F', '#7B68EE', '#00FFFF'];
 var shieldColors = ['#E36174', '#20FBEF'];
 var particles = [];
-var mouse = {
-	x: -999,
-	y: -999
-};
-var id = 0;
-
-// var isDown;
-// var requestId;
-
 var wDown;
 var sDown;
 var arrowUpDown;
@@ -32,25 +23,7 @@ addEventListener('keydown', function (event) {
 	}
 });
 
-addEventListener('mousemove', function (event) {
-	mouse.x = event.clientX;
-	mouse.y = event.clientY;
-});
-
-// canvas.onmousedown = function(event) {
-// 	isDown = true;
-// 	Generate();
-// };
-
-canvas.onmouseup = function() {
-	isDown = false;
-	cancelAnimationFrame(requestId);
-	// console.log('Анимация отключена!');
-}
-
 addEventListener('keydown', function (event) {
-	console.log('keydown: ' + event.keyCode);
-
 	if (event.keyCode == 87) {
 		wDown = true;
 	} else if (event.keyCode == 83) {
@@ -63,8 +36,6 @@ addEventListener('keydown', function (event) {
 });
 
 addEventListener('keyup', function (event) {
-	console.log('keyup: ' + event.keyCode);
-
 	if (event.keyCode == 87) {
 		wDown = false;
 		particles[0].acceleration = 1;
@@ -126,6 +97,9 @@ class Particle {
 				for (let i = 0; i < particles.length; i++) {
 					if (particles[i].id == this.id) {
 						particles.splice(i, 1);
+						for (let j = 2; j < particles.length; j++) {
+							particles[j].id = j;
+						}
 						break;
 					}
 				}
@@ -143,15 +117,17 @@ class Particle {
 			}
 		}
 
-		for (let i = 0; i < particles.length; i++) {
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < canvas.width / 2 && this.id < i) {	
+		for (let i = this.id + 1; i < particles.length; i++) {
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < canvas.width / 2) {	
 				ctx.beginPath();
+				ctx.save();
 				ctx.moveTo(this.x, this.y);
 				ctx.lineWidth = 1;
 				ctx.setLineDash([1, 15]);
 				ctx.lineTo(particles[i].x, particles[i].y);
 				ctx.strokeStyle = this.color;
 				ctx.stroke();
+				ctx.restore();
 				ctx.closePath();
 			}
 		}
@@ -182,19 +158,25 @@ class Particle {
 		}
 		else {
 			ctx.beginPath();
+			ctx.fillStyle = this.color;
+			ctx.arc(this.x, this.y, this.radius - this.radius / 2, Math.PI * 2, false);
+			ctx.fill();
+			ctx.closePath();
+
+			ctx.beginPath();
 			ctx.save();
 			ctx.shadowBlur = 10;
 			ctx.shadowColor = this.color;
 			ctx.lineWidth = this.lineWidth;
 			ctx.fillStyle = this.color;
 			ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-			ctx.arc(this.x, this.y, this.radius - 3, Math.PI * 2, false);
+			ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
 			ctx.fill('evenodd');
 			ctx.restore();
 			ctx.closePath();
 		}
 	}
-}
+};
 
 function init () {
 	for (let i = 0; i < 10; i++) {
@@ -238,7 +220,7 @@ function init () {
 
 		particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, 1, isShield));
 	}
-}
+};
 
 init();
 
@@ -278,7 +260,7 @@ function animate() {
 			particles[1].y = particles[1].radius;
 		}
 	}
-}
+};
 
 animate();
 
@@ -311,7 +293,7 @@ function rotate(velocity, angle) {
 	};
 
 	return rotatedVelocities;
-}
+};
 
 function resolveCollision(particle, otherParticle) {
 	const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
@@ -348,4 +330,4 @@ function resolveCollision(particle, otherParticle) {
 		otherParticle.velocity.x = vFinal2.x;
 		otherParticle.velocity.y = vFinal2.y;
 	}
-}
+};
