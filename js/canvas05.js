@@ -108,7 +108,6 @@ class Particle {
 					if (i == 0 || i == 1) {
 						if (this.x - this.radius <= 10 || this.x + this.radius >= canvas.width - 10) {
 							this.velocity.x = -this.velocity.x;
-							this.velocity.y = -this.velocity.y;
 						}
 					}
 					else {
