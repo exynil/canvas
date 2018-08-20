@@ -189,22 +189,27 @@ class Particle {
 			} else if (this.id == 1) {
 				ctx.fillText(this.count, this.x - 40, this.y + 10);
 			}
-			
 		}
 		else {
 			ctx.beginPath();
+			ctx.save();
+			ctx.shadowBlur = 10;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 0;
+			ctx.shadowColor = this.color;
 			ctx.lineWidth = this.lineWidth;
 			ctx.fillStyle = this.color;
 			ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
 			ctx.arc(this.x, this.y, this.radius - 3, Math.PI * 2, false);
 			ctx.fill('evenodd');
+			ctx.restore();
 			ctx.closePath();
 		}
 	}
 }
 
 function init () {
-	for (let i = 0; i < 5; i++) {
+	for (let i = 0; i < 6; i++) {
 		let radius = 20;
 		let color = randomColor();
 		let mass = 1;
