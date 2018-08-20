@@ -53,15 +53,16 @@ class Particle {
 
 		for (let i = 0; i < particles.length; i++) {
 			if (this === particles[i]) continue;
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 0) {
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
 				resolveCollision(this, particles[i]);
 			}
 
 			if (this.id < i) {
 				let grd = ctx.createLinearGradient(this.x, this.y, particles[i].x, particles[i].y);
 				grd.addColorStop(0, this.color);
-				grd.addColorStop(1, particles[i].color);			
+				grd.addColorStop(1, particles[i].color);
 				ctx.beginPath();
+				ctx.lineCap = 'round';
 				ctx.moveTo(this.x, this.y);
 				ctx.lineTo(particles[i].x, particles[i].y);
 				ctx.strokeStyle = grd;

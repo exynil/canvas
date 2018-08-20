@@ -59,7 +59,7 @@ class Particle {
 
 		for (let i = 0; i < particles.length; i++) {
 			if (this === particles[i]) continue;
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 0) {
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
 				resolveCollision(this, particles[i]);
 			}
 			// let grd = ctx.createLinearGradient(this.x, this.y, particles[i].x, particles[i].y);

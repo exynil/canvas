@@ -11,11 +11,6 @@ addEventListener('resize', function() {
 	canvas.height = innerHeight;
 });
 
-addEventListener('mousemove', function(event) {
-	mouse.x = event.clientX;
-	mouse.y = event.clientY;
-});
-
 addEventListener('keydown', function (event) {
 	if (event.keyCode == 27) {
 		location.href = '../index.html';
@@ -45,11 +40,11 @@ class Particle {
 
 		for (let i = 0; i < particles.length; i++) {
 			if (this === particles[i]) continue;
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 0) {
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
 				resolveCollision(this, particles[i]);
 			}
 
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 50 && this.id < i) {	
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 50 && this.id < i) {	
 				ctx.beginPath();
 				ctx.moveTo(this.x, this.y);
 				ctx.lineTo(particles[i].x, particles[i].y);

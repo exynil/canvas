@@ -1,7 +1,15 @@
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var colors = ['#00FF7F', '#7B68EE', '#00FFFF'];
-var particles;
+var particles = [];
+var mouse = {
+	x: -999,
+	y: -999
+};
+var id = 0;
+
+var isDown;
+var requestId;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -11,24 +19,60 @@ addEventListener('resize', function() {
 	canvas.height = innerHeight;
 });
 
-addEventListener('mousemove', function(event) {
-	mouse.x = event.clientX;
-	mouse.y = event.clientY;
-});
-
 addEventListener('keydown', function (event) {
 	if (event.keyCode == 27) {
 		location.href = '../index.html';
 	}
 });
 
+addEventListener('mousemove', function (event) {
+	mouse.x = event.clientX;
+	mouse.y = event.clientY;
+});
+
+canvas.onmousedown = function(event){
+	isDown = true;
+	Generate();
+};
+
+canvas.onmouseup = function(){
+	isDown = false;
+	cancelAnimationFrame(requestId);
+	// console.log('Анимация отключена!');
+}
+
+function Generate () {
+	requestId = requestAnimationFrame(Generate);
+	if (isDown) {
+		id++;
+		const radius = randomIntFromRange(15, 25);
+		const color = randomColor(colors);
+		const mass = 1;
+		const speed = randomIntFromRange(2, 4);
+		const x = mouse.x;
+		const y = mouse.y;
+		const lineWidth = 0.5;
+		particles.push(new Particle(id, x, y, radius, mass, speed, color, lineWidth));
+		if (particles.length > 100) {
+			while (particles.length > 100) {
+				particles.shift();
+			}
+
+			for (let i = 0; i < particles.length; i++) {
+				particles[i].id = i;
+			}
+		}
+
+	}
+	// console.log('Анимация работает!');
+}
+
 class Particle {
-	constructor(id, radius, mass, speed, acceleration, x, y, color) {
+	constructor(id, x, y, radius, mass, speed, color, lineWidth) {
 		this.id = id;
 		this.radius = radius;
 		this.mass = mass;
 		this.speed = speed;
-		this.acceleration = acceleration;
 		this.x = x;
 		this.y = y;
 		this.velocity = {
@@ -36,8 +80,7 @@ class Particle {
 			y: Math.random() - 0.5
 		};
 		this.color = color;
-		this.opacity = 0;
-		this.shadow = false;
+		this.lineWidth = lineWidth;
 	};
 
 	Update(particles){
@@ -45,17 +88,22 @@ class Particle {
 
 		for (let i = 0; i < particles.length; i++) {
 			if (this === particles[i]) continue;
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 0) {
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
 				resolveCollision(this, particles[i]);
 			}
 
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius * 2 < 50 && this.id < i) {	
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 100 && this.id > i) {	
+				let grd = ctx.createLinearGradient(this.x, this.y, particles[i].x, particles[i].y);
+				grd.addColorStop(0, this.color);
+				grd.addColorStop(1, particles[i].color);
 				ctx.beginPath();
+				ctx.lineCap = 'round';
 				ctx.moveTo(this.x, this.y);
 				ctx.lineTo(particles[i].x, particles[i].y);
-				ctx.strokeStyle = '#00DAFF';
+				ctx.strokeStyle = grd;
 				ctx.lineWidth = 0.5;
 				ctx.stroke();
+				ctx.closePath();
 			}
 		}
 
@@ -73,45 +121,21 @@ class Particle {
 
 	Draw() {
 		ctx.beginPath();
+		ctx.lineWidth = this.lineWidth;
+		ctx.strokeStyle = this.color;
+		ctx.arc(this.x, this.y, this.radius - 8, Math.PI * 2, false);
+		ctx.stroke();
+		ctx.closePath();
+
+		ctx.beginPath();
+		ctx.lineWidth = this.lineWidth;
 		ctx.fillStyle = this.color;
 		ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-		ctx.fill();
+		ctx.arc(this.x, this.y, this.radius - 5, Math.PI * 2, false);
+		ctx.fill('evenodd');
 		ctx.closePath();
 	}
 }
-
-
-function init() {
-	particles = [];
-
-	for (let i = 0; i < 250; i++) {
-		const radius = 5;
-		// const color = randomColor(colors);
-		const color = 'white';
-		const mass = 1;
-		const speed = 3;
-		const acceleration = 0.1;
-
-		let x = randomIntFromRange(radius, canvas.width - radius);
-		let y = randomIntFromRange(radius, canvas.height - radius);
-		
-
-		if (i !== 0) {
-			for (let j = 0; j < particles.length; j++) {
-				if (getDistance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
-					x = randomIntFromRange(radius, canvas.width - radius);
-					y = randomIntFromRange(radius, canvas.height - radius);
-
-					j = -1;
-				}
-			}
-		}
-
-		particles.push(new Particle(i, radius, mass, speed, acceleration, x, y, color));
-	}
-}
-
-init();
 
 function animate() {
 	requestAnimationFrame(animate);
@@ -126,18 +150,37 @@ animate();
 
 function randomIntFromRange (min, max) {
 	return Math.floor(Math.random() * (max - min) + min);
-}
+};
 
-function randomColor(colors) {
+function randomColorFromArray(colors) {
 	return colors[Math.floor(Math.random() * colors.length)];
-}
+};
+
+function randomColor() {
+	let redHex = Math.floor(Math.random() * 255).toString(16);
+	let greenHex = Math.floor(Math.random() * 255).toString(16);
+	let blueHex = Math.floor(Math.random() * 255).toString(16);
+	if (redHex.length == 1) {
+		redHex = '0' + redHex;
+	}
+	if (greenHex.length == 1) {
+		greenHex = '0' + greenHex;
+	}
+
+	if (blueHex.length == 1) {
+		blueHex = '0' + blueHex;
+	}
+
+	// console.log('#' + redHex + green.toString(16) + blue.toString(16));
+	return '#' + redHex + greenHex + blueHex;
+};
 
 function getDistance (x1, y1, x2, y2) {
 	let xDistance = x2 - x1;
 	let yDistance = y2 - y1;
 
 	return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
-}
+};
 
 function rotate(velocity, angle) {
 	const rotatedVelocities = {
@@ -146,7 +189,7 @@ function rotate(velocity, angle) {
 	};
 
 	return rotatedVelocities;
-}
+};
 
 function resolveCollision(particle, otherParticle) {
 	const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
@@ -183,4 +226,4 @@ function resolveCollision(particle, otherParticle) {
 		otherParticle.velocity.x = vFinal2.x;
 		otherParticle.velocity.y = vFinal2.y;
 	}
-}
+};
