@@ -1,13 +1,13 @@
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var colors = ['#00FF7F', '#7B68EE', '#00FFFF'];
-var shieldColors = ['#E36174', '#20FBEF'];
+var shieldColors = ['#00E8FF', '#FF7400'];
 var particles = [];
 var wDown;
 var sDown;
 var arrowUpDown;
 var arrowDownDown;
-var animationId;
+var numberOfBalls;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -15,6 +15,7 @@ canvas.height = innerHeight;
 addEventListener('resize', function() {
 	canvas.width = innerWidth;
 	canvas.height = innerHeight;
+	particles[1].x = innerWidth;
 });
 
 addEventListener('keydown', function (event) {
@@ -52,7 +53,7 @@ addEventListener('keyup', function (event) {
 });
 
 class Particle {
-	constructor(id, x, y, radius, mass, speed, acceleration, color, lineWidth, isShield) {
+	constructor(id, x, y, radius, mass, speed, acceleration, color, isShield) {
 		this.id = id;
 		this.x = x;
 		this.y = y;
@@ -61,7 +62,6 @@ class Particle {
 		this.speed = speed;
 		this.acceleration = acceleration;
 		this.color = color;
-		this.lineWidth = lineWidth;
 		this.velocity = {
 			x: Math.random() - 0.5,
 			y: Math.random() - 0.5
@@ -118,16 +118,15 @@ class Particle {
 		}
 
 		for (let i = this.id + 1; i < particles.length; i++) {
-			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < canvas.width / 2) {	
+			if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < canvas.width / 2 - canvas.width / 6) {	
 				ctx.beginPath();
-				ctx.save();
 				ctx.moveTo(this.x, this.y);
+				ctx.lineCap = 'round';
 				ctx.lineWidth = 1;
-				ctx.setLineDash([1, 15]);
+				ctx.setLineDash([1, 10]);
 				ctx.lineTo(particles[i].x, particles[i].y);
 				ctx.strokeStyle = this.color;
 				ctx.stroke();
-				ctx.restore();
 				ctx.closePath();
 			}
 		}
@@ -136,24 +135,18 @@ class Particle {
 	Draw() {
 		if (this.isShield) {
 			ctx.beginPath();
-			ctx.lineWidth = 1;
-			ctx.strokeStyle = this.color;
-			ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-			ctx.stroke();
-			ctx.closePath();
-
-			ctx.beginPath();
+			ctx.shadowBlur = 30;
+			ctx.shadowColor = this.color;
 			ctx.fillStyle = this.color;
 			ctx.fillRect(this.x - 10, this.y - this.radius, 20, 200);
 			ctx.closePath();
 
 			ctx.beginPath();
 			ctx.font = "30pt Arial";
-			ctx.textAlign = "center";
 			if (this.id == 0) {
 				ctx.fillText(this.count, this.x + 40, this.y + 10);
 			} else if (this.id == 1) {
-				ctx.fillText(this.count, this.x - 40, this.y + 10);
+				ctx.fillText(this.count, this.x - 60, this.y + 10);
 			}
 		}
 		else {
@@ -164,26 +157,25 @@ class Particle {
 			ctx.closePath();
 
 			ctx.beginPath();
-			ctx.save();
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 30;
 			ctx.shadowColor = this.color;
-			ctx.lineWidth = this.lineWidth;
+			ctx.lineWidth = 1;
 			ctx.fillStyle = this.color;
 			ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
 			ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
 			ctx.fill('evenodd');
-			ctx.restore();
 			ctx.closePath();
 		}
 	}
 };
 
 function init () {
-	for (let i = 0; i < 10; i++) {
-		let radius = 20;
+	numberOfBalls = 3;
+	for (let i = 0; i < 2 + numberOfBalls; i++) {
+		let radius = 15;
 		let color = randomColor();
 		let mass = 1;
-		let speed = 10;
+		let speed = 5;
 		let acceleration = 0.1;
 		let x;
 		let y;
@@ -218,7 +210,7 @@ function init () {
 			}
 		}
 
-		particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, 1, isShield));
+		particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, isShield));
 	}
 };
 
