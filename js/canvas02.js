@@ -62,20 +62,6 @@ class Particle {
             if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
                 resolveCollision(this, particles[i]);
             }
-            // let grd = ctx.createLinearGradient(this.x, this.y, particles[i].x, particles[i].y);
-            // grd.addColorStop(0, this.color);
-            // grd.addColorStop(1, particles[i].color);			
-            // ctx.beginPath();
-            // // ctx.shadowBlur = 10;
-            // // ctx.shadowOffsetX = 0;
-            // // ctx.shadowOffsetY = 0;
-            // // ctx.shadowColor = 'cyan';
-            // ctx.moveTo(this.x, this.y);
-            // ctx.lineTo(particles[i].x, particles[i].y);
-            // ctx.strokeStyle = grd;
-            // ctx.fill();
-            // ctx.lineWidth = 0.5;
-            // ctx.stroke();
         }
 
         if (this.x - this.radius <= 0 || this.x + this.radius >= innerWidth) {
