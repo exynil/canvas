@@ -138,7 +138,7 @@ class Particle {
 			ctx.shadowBlur = 30;
 			ctx.shadowColor = this.color;
 			ctx.fillStyle = this.color;
-			ctx.fillRect(this.x - 10, this.y - this.radius, 20, 200);
+			ctx.fillRect(this.x - 10, this.y - this.radius, 20, this.radius * 2);
 			ctx.closePath();
 
 			ctx.beginPath();
@@ -170,54 +170,66 @@ class Particle {
 };
 
 function init () {
-	numberOfBalls = 3;
-	for (let i = 0; i < 2 + numberOfBalls; i++) {
-		let radius = 15;
-		let color = randomColor();
+	pushShields();
+	pushBalls(3);
+};
+
+init();
+
+function pushShields () {
+	for (let i = 0; i < 2; i++) {
+		let radius = 100;
+		let color = shieldColors[i];
 		let mass = 1;
-		let speed = 5;
+		let speed = 0;
 		let acceleration = 0.1;
 		let x;
 		let y;
-		let isShield = false;
+		let isShield = true;
 		if (i == 0) {
-			radius = 100;
-			isShield = true;
-			color = shieldColors[i];
 			x = 0;
 			y = canvas.height / 2;
+			radius = 100;
 		}
 		else if (i == 1) {
-			radius = 100;
-			isShield = true;
-			color = shieldColors[i];
 			x = canvas.width;
 			y = canvas.height / 2;
-		} else {
-			x = randomIntFromRange(radius, canvas.width - radius);
-			y = randomIntFromRange(radius, canvas.height - radius);
 		}
-		
+		particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, isShield));
+	}
+}
 
-		if (i !== 0) {
-			for (let j = 0; j < particles.length; j++) {
-				if (getDistance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
-					x = randomIntFromRange(radius, canvas.width - radius);
-					y = randomIntFromRange(radius, canvas.height - radius);
+function pushBalls (numberOfBalls) {
+	for (let i = 2; i < 2 + numberOfBalls; i++) {
+		let radius = 15;
+		let color = randomColor();
+		let mass = 1;
+		let speed = 30;
+		let acceleration = 0.1;
+		let isShield = false;
+		let x = randomIntFromRange(radius, canvas.width - radius);
+		let y = randomIntFromRange(radius, canvas.height - radius);
 
-					j = -1;
-				}
+		for (let j = 0; j < particles.length; j++) {
+			if (getDistance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
+				x = randomIntFromRange(radius, canvas.width - radius);
+				y = randomIntFromRange(radius, canvas.height - radius);
+
+				j = -1;
 			}
 		}
 
 		particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, isShield));
 	}
-};
-
-init();
+}
 
 function animate() {
-	animationId = requestAnimationFrame(animate);
+	requestAnimationFrame(animate);
+
+	if (particles.length < 3) {
+
+	}
+
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	for (let i = 0; i < particles.length; i++) {
@@ -268,6 +280,7 @@ function randomColor() {
 	let red = Math.floor(Math.random() * 255);
 	let green = Math.floor(Math.random() * 255);
 	let blue = Math.floor(Math.random() * 255);
+	
 	return '#' + red.toString(16) + green.toString(16) + blue.toString(16);
 }
 
