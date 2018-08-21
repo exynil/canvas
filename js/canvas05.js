@@ -178,7 +178,7 @@ init();
 
 function pushShields () {
 	for (let i = 0; i < 2; i++) {
-		let radius = 100;
+		let radius = 450;
 		let color = shieldColors[i];
 		let mass = 1;
 		let speed = 0;
@@ -227,7 +227,7 @@ function animate() {
 	requestAnimationFrame(animate);
 
 	if (particles.length < 3) {
-
+		pushBalls(3);
 	}
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
