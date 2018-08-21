@@ -171,7 +171,6 @@ function randomColor() {
         blueHex = '0' + blueHex;
     }
 
-    // console.log('#' + redHex + green.toString(16) + blue.toString(16));
     return '#' + redHex + greenHex + blueHex;
 }
 

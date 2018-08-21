@@ -66,7 +66,7 @@ class Particle {
             x: Math.random() - 0.5,
             y: Math.random() - 0.5
         };
-        this.count = 0;
+        this.numberOfWins = 0;
         this.isShield = isShield;
     };
     Update(particles) {
@@ -87,9 +87,9 @@ class Particle {
             }
 
             if (this.x + this.radius <= 0 && this.isShield == false) {
-                particles[1].count++;
+                particles[1].numberOfWins++;
             } else if (this.x - this.radius >= innerWidth && this.isShield == false) {
-                particles[0].count++;
+                particles[0].numberOfWins++;
             }
 
             if ((this.x + this.radius <= 0 || this.x - this.radius >= innerWidth) && this.isShield == false) {
@@ -142,10 +142,11 @@ class Particle {
             ctx.beginPath();
             ctx.font = "30pt Arial";
             if (this.id == 0) {
-                ctx.fillText(this.count, this.x + 40, this.y + 10);
+                ctx.fillText(this.numberOfWins, this.x + 40, this.y + 10);
             } else if (this.id == 1) {
-                ctx.fillText(this.count, this.x - 60, this.y + 10);
+                ctx.fillText(this.numberOfWins, this.x - 60, this.y + 10);
             }
+            ctx.closePath();
         } else {
             ctx.beginPath();
             ctx.fillStyle = this.color;
@@ -157,7 +158,6 @@ class Particle {
             ctx.shadowBlur = 30;
             ctx.shadowColor = this.color;
             ctx.lineWidth = 1;
-            ctx.fillStyle = this.color;
             ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
             ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
             ctx.fill('evenodd');
@@ -187,6 +187,7 @@ function pushShields() {
             x = 0;
             y = canvas.height / 2;
         } else if (i == 1) {
+            radius = 450;
             x = canvas.width;
             y = canvas.height / 2;
         }
@@ -220,11 +221,7 @@ function pushBalls(numberOfBalls) {
 
 function animate() {
     requestAnimationFrame(animate);
-    // ctx.fillStyle = 'rgba(1,1,1,0.09)';
-    // ctx.fillRect(0,0,canvas.width,canvas.height);
-    // ctx.fillStyle = 'black';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.fillRect(0,0,canvas.width,canvas.height);
 
     if (particles.length < 3) {
         pushBalls(3);
@@ -274,11 +271,21 @@ function randomColorFromArray(colors) {
 }
 
 function randomColor() {
-    let red = Math.floor(Math.random() * 255);
-    let green = Math.floor(Math.random() * 255);
-    let blue = Math.floor(Math.random() * 255);
+    let redHex = Math.floor(Math.random() * 255).toString(16);
+    let greenHex = Math.floor(Math.random() * 255).toString(16);
+    let blueHex = Math.floor(Math.random() * 255).toString(16);
+    if (redHex.length == 1) {
+        redHex = '0' + redHex;
+    }
+    if (greenHex.length == 1) {
+        greenHex = '0' + greenHex;
+    }
 
-    return '#' + red.toString(16) + green.toString(16) + blue.toString(16);
+    if (blueHex.length == 1) {
+        blueHex = '0' + blueHex;
+    }
+
+    return '#' + redHex + greenHex + blueHex;
 }
 
 function getDistance(x1, y1, x2, y2) {

@@ -33,7 +33,7 @@ class Particle {
         this.distanceFromCenter = randomIntFromRange(50, 120);
         this.lastMouse = {x: this.x, y: this.y};
     };
-    Update(particles) {
+    Update() {
         const lastPoint = {
             x: this.x,
             y: this.y
@@ -45,20 +45,6 @@ class Particle {
         this.x = this.lastMouse.x +  Math.cos(this.radians) * this.distanceFromCenter;
         this.y = this.lastMouse.y + Math.sin(this.radians) * this.distanceFromCenter;
         this.Draw(lastPoint);
-        
-
-        // for (let i = 0; i < particles.length; i++) {
-          
-        //     ctx.beginPath();
-        //     ctx.moveTo(this.x, this.y);
-        //     ctx.lineCap = 'round';
-        //     ctx.lineWidth = 1;
-        //     ctx.setLineDash([1, 10]);
-        //     ctx.lineTo(particles[i].x, particles[i].y);
-        //     ctx.strokeStyle = this.color;
-        //     ctx.stroke();
-        //     ctx.closePath();
-        // }
     }
 
     Draw(lastPoint) {
@@ -81,6 +67,7 @@ function init() {
     for (let i = 0; i < 50; i++) {
         const radius = randomIntFromRange(2, 6);
         const color = randomColorFromArray(colors);
+        // const color = randomColor();
         particles.push(new Particle(mouse.x, mouse.y, radius, color));
     }
 }
@@ -108,9 +95,19 @@ function randomColorFromArray(colors) {
 }
 
 function randomColor() {
-    let red = Math.floor(Math.random() * 255);
-    let green = Math.floor(Math.random() * 255);
-    let blue = Math.floor(Math.random() * 255);
+    let redHex = Math.floor(Math.random() * 255).toString(16);
+    let greenHex = Math.floor(Math.random() * 255).toString(16);
+    let blueHex = Math.floor(Math.random() * 255).toString(16);
+    if (redHex.length == 1) {
+        redHex = '0' + redHex;
+    }
+    if (greenHex.length == 1) {
+        greenHex = '0' + greenHex;
+    }
 
-    return '#' + red.toString(16) + green.toString(16) + blue.toString(16);
+    if (blueHex.length == 1) {
+        blueHex = '0' + blueHex;
+    }
+
+    return '#' + redHex + greenHex + blueHex;
 }
