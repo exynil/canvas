@@ -22,6 +22,12 @@ addEventListener('mousemove', function(event) {
     mouse.y = event.clientY;
 });
 
+addEventListener('keydown', function(event) {
+    if (event.keyCode == 27) {
+        location.href = '../index.html';
+    }
+});
+
 class Particle {
     constructor(x, y, radius, color) {
         this.x = x;

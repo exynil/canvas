@@ -179,9 +179,9 @@ class Ball {
 		// }
 
 		// Блокировкая правого края
-		if (this.x + this.radius > innerWidth) {
-			this.velocity.x = -this.velocity.x;
-		}
+		// if (this.x + this.radius > innerWidth) {
+		// 	this.velocity.x = -this.velocity.x;
+		// }
 
 		// Передвигаем мяч по вектору движения
 		this.x += this.velocity.x * this.speed;
