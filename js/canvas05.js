@@ -1,348 +1,469 @@
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var colors = ['#00FF7F', '#7B68EE', '#00FFFF'];
-var shieldColors = ['#00E8FF', '#FF7400'];
-var particles = [];
+var boardColors = ['#00E8FF', '#FF7400'];
+var boards = [];
+var balls = [];
 var wKeyDown;
 var sKeyDown;
 var arrowUpKeyDown;
 var arrowDownKeyDown;
+var numberOfBalls = 2;
+var maxSpeed = 0;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
 addEventListener('resize', function() {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    particles[1].x = innerWidth;
+	canvas.width = innerWidth;
+	canvas.height = innerHeight;
+	boards[1].x = innerWidth - boards[1].width;
 });
 
 addEventListener('keydown', function(event) {
-    if (event.keyCode == 27) {
-        location.href = '../index.html';
-    }
+	if (event.keyCode == 27) {
+		location.href = '../index.html';
+	}
 });
 
 addEventListener('keydown', function(event) {
-    if (event.keyCode == 87) {
-        wKeyDown = true;
-        particles
-    } else if (event.keyCode == 83) {
-        sKeyDown = true;
-    } else if (event.keyCode == 40) {
-        arrowDownKeyDown = true;
-    } else if (event.keyCode == 38) {
-        arrowUpKeyDown = true;
-    }
+	if (event.keyCode == 87) {
+		wKeyDown = true;
+		boards
+	} else if (event.keyCode == 83) {
+		sKeyDown = true;
+	} else if (event.keyCode == 40) {
+		arrowDownKeyDown = true;
+	} else if (event.keyCode == 38) {
+		arrowUpKeyDown = true;
+	}
 });
 
 addEventListener('keyup', function(event) {
-    if (event.keyCode == 87) {
-        wKeyDown = false;
-        particles[0].acceleration = 1;
-    } else if (event.keyCode == 83) {
-        sKeyDown = false;
-        particles[0].acceleration = 1;
-    } else if (event.keyCode == 40) {
-        arrowDownKeyDown = false;
-        particles[1].acceleration = 1;
-    } else if (event.keyCode == 38) {
-        arrowUpKeyDown = false;
-        particles[1].acceleration = 1;
-    }
+	if (event.keyCode == 87) {
+		wKeyDown = false;
+		boards[0].acceleration = 1;
+	} else if (event.keyCode == 83) {
+		sKeyDown = false;
+		boards[0].acceleration = 1;
+	} else if (event.keyCode == 40) {
+		arrowDownKeyDown = false;
+		boards[1].acceleration = 1;
+	} else if (event.keyCode == 38) {
+		arrowUpKeyDown = false;
+		boards[1].acceleration = 1;
+	}
 });
 
-class Particle {
-    constructor(id, x, y, radius, mass, speed, acceleration, color, isShield) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.mass = mass;
-        this.speed = speed;
-        this.acceleration = acceleration;
-        this.color = color;
-        this.velocity = {
-            x: Math.random() - 0.5,
-            y: Math.random() - 0.5
-        };
-        this.numberOfWins = 0;
-        this.isShield = isShield;
-    };
-    Update(particles) {
-        this.Draw();
-        if (this.isShield == false) {
-            for (let i = 0; i < particles.length; i++) {
-                if (this === particles[i])
-                    continue;
-                if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < 0) {
-                    if (i == 0 || i == 1) {
-                        if (this.x - this.radius <= 10 || this.x + this.radius >= canvas.width - 10) {
-                            this.velocity.x = -this.velocity.x;
-                        }
-                    } else {
-                        resolveCollision(this, particles[i]);
-                    }
-                }
+class Board {
+	constructor(id, x, y, width, height, mass, speed, acceleration, color) {
+		this.id = id;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.mass = mass;
+		this.speed = speed;
+		this.acceleration = acceleration;
+		this.color = color;
+		this.velocity = {
+			x: Math.random() - 0.5,
+			y: Math.random() - 0.5
+		}
+		this.numberOfWins = 0;
+	}
+
+	Update() {
+		this.Draw();
+	}
+
+	Draw() {
+		ctx.beginPath();
+		ctx.strokeStyle = this.color;
+		ctx.arc(this.x, this.y + this.height / 2, 100, 0, Math.PI * 2, false);
+		ctx.stroke();
+		ctx.closePath();
+
+		ctx.beginPath();
+		ctx.shadowBlur = 30;
+		ctx.shadowColor = this.color;
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x, this.y, this.width, this.height);
+		ctx.closePath();
+	}
+}
+
+class Ball {
+	constructor(id, x, y, radius, mass, speed, acceleration, color, isboard) {
+		this.id = id;
+		this.x = x;
+		this.y = y;
+		this.radius = radius;
+		this.mass = mass;
+		this.speed = speed;
+		this.acceleration = acceleration;
+		this.color = color;
+		this.velocity = {
+			x: Math.random() - 0.5,
+			y: Math.random() - 0.5
+		}
+	}
+
+	Update(balls) {
+		this.Draw();
+
+		// Проверка на столкновение мяча с левой доской
+		if (this.x - this.radius <= boards[0].x + boards[0].width && this.y >= boards[0].y && this.y <= boards[0].y + boards[0].height) {
+			this.velocity.y *= 1;
+			this.velocity.x *= -1;
+		}
+
+		// Проверка на столкновение мяча с правой доской
+		if (this.x + this.radius >= boards[1].x && this.y >= boards[1].y && this.y <= boards[1].y + boards[1].height) {
+			this.velocity.y *= 1;
+			this.velocity.x *= -1;
+		}
+
+		// Увеличиваем счетчики побед игроков, если противник не смог отразить мяч
+		if (this.x + this.radius <= 0) {
+			boards[1].numberOfWins++;
+		} else if (this.x - this.radius >= innerWidth) {
+			boards[0].numberOfWins++;
+		}
+
+		// Удаляем объект если он вышел за левый и правый край
+		if (this.x + this.radius <= 0 || this.x - this.radius >= innerWidth) {
+			for (let i = 0; i < balls.length; i++) {
+				if (balls[i].id == this.id) {
+					balls.splice(i, 1);
+					for (let j = 0; j < balls.length; j++) {
+						balls[j].id = j;
+					}
+					break;
+				}
+			}
+			return;
+		}
+
+		// Обнаружение столкновений мяча с другими мячами
+		for (let i = 0; i < balls.length; i++) {
+            if (this === balls[i]) continue;
+            if (getDistance(this.x, this.y, balls[i].x, balls[i].y) - this.radius - balls[i].radius < 0) {
+                resolveCollision(this, balls[i]);
             }
 
-            if (this.x + this.radius <= 0 && this.isShield == false) {
-                particles[1].numberOfWins++;
-            } else if (this.x - this.radius >= innerWidth && this.isShield == false) {
-                particles[0].numberOfWins++;
-            }
-
-            if ((this.x + this.radius <= 0 || this.x - this.radius >= innerWidth) && this.isShield == false) {
-                for (let i = 0; i < particles.length; i++) {
-                    if (particles[i].id == this.id) {
-                        particles.splice(i, 1);
-                        for (let j = 2; j < particles.length; j++) {
-                            particles[j].id = j;
-                        }
-                        break;
-                    }
-                }
-                return;
-            }
-
-            if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
-                this.velocity.y = -this.velocity.y;
-            }
-
-            if (this.isShield == false) {
-                this.x += this.velocity.x * this.speed;
-                this.y += this.velocity.y * this.speed;
-            }
-        }
-
-        for (let i = this.id + 1; i < particles.length; i++) {
-            if (getDistance(this.x, this.y, particles[i].x, particles[i].y) - this.radius - particles[i].radius < canvas.width / 2 - canvas.width / 6) {
+            if (this.id < i) {
+            	ctx.beginPath();
+                let gradient = ctx.createLinearGradient(this.x, this.y, balls[i].x, balls[i].y);
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(1, balls[i].color);
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y);
                 ctx.lineCap = 'round';
-                ctx.lineWidth = 1;
                 ctx.setLineDash([1, 10]);
-                ctx.lineTo(particles[i].x, particles[i].y);
-                ctx.strokeStyle = this.color;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(balls[i].x, balls[i].y);
+                ctx.strokeStyle = gradient;
                 ctx.stroke();
                 ctx.closePath();
             }
         }
-    }
 
-    Draw() {
-        if (this.isShield) {
-            ctx.beginPath();
-            ctx.shadowBlur = 30;
-            ctx.shadowColor = this.color;
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x - 10, this.y - this.radius, 20, this.radius * 2);
-            ctx.closePath();
+		// Блокировка верхнего и нижнего края
+		if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
+			this.velocity.y = -this.velocity.y;
+		}
 
-            ctx.beginPath();
-            ctx.font = "30pt Arial";
-            if (this.id == 0) {
-                ctx.fillText(this.numberOfWins, this.x + 40, this.y + 10);
-            } else if (this.id == 1) {
-                ctx.fillText(this.numberOfWins, this.x - 60, this.y + 10);
-            }
-            ctx.closePath();
-        } else {
-            ctx.beginPath();
-            ctx.fillStyle = this.color;
-            ctx.arc(this.x, this.y, this.radius - this.radius / 2, Math.PI * 2, false);
-            ctx.fill();
-            ctx.closePath();
+		// Блокировкая левого края
+		// if (this.x - this.radius < 0) {
+		// 	this.velocity.x = -this.velocity.x;
+		// }
 
-            ctx.beginPath();
-            ctx.shadowBlur = 30;
-            ctx.shadowColor = this.color;
-            ctx.lineWidth = 1;
-            ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
-            ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
-            ctx.fill('evenodd');
-            ctx.closePath();
-        }
-    }
+		// Блокировкая правого края
+		if (this.x + this.radius > innerWidth) {
+			this.velocity.x = -this.velocity.x;
+		}
+
+		// Передвигаем мяч по вектору движения
+		this.x += this.velocity.x * this.speed;
+		this.y += this.velocity.y * this.speed;
+		this.speed += this.acceleration;
+	}
+
+	Draw() {
+		// Прорисовка внутреннего круга мяча
+		ctx.beginPath();
+		ctx.shadowBlur = 30;
+		ctx.shadowColor = this.color;
+		ctx.fillStyle = this.color;
+		ctx.arc(this.x, this.y, this.radius - this.radius / 2, Math.PI * 2, false);
+		ctx.fill();
+		ctx.closePath();
+
+		// Прорисовка внешнего круга мяча
+		ctx.beginPath();
+		ctx.shadowBlur = 30;
+		ctx.shadowColor = this.color;
+		ctx.fillStyle = this.color;
+		ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
+		ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
+		ctx.fill('evenodd');
+		ctx.closePath();
+
+		// Линейка (в планах)
+	}
 }
 
+// Вывод результата игроков
+function showResult() {
+	for (let i = 0; i < boards.length; i++) {
+		ctx.beginPath();
+		ctx.font = "60pt Arial";
+		ctx.shadowBlur = 15;
+		if (boards[i].id == 0) {
+			ctx.fillStyle = boards[i].color;
+			ctx.shadowColor = boards[i].color;
+			ctx.fillText(boards[i].numberOfWins, canvas.width / 2 - 100, canvas.height / 2);
+		} else {
+			ctx.fillStyle = boards[i].color;
+			ctx.shadowColor = boards[i].color;
+			ctx.fillText(boards[i].numberOfWins, canvas.width / 2 + 100, canvas.height / 2);
+		}
+		ctx.closePath();
+	}
+}
+
+// Прорисовка линий между доской и мячом
+function showLineBetweenBoardAndBall() {
+	for (let i = 0; i < boards.length; i++) {
+		for (let j = 0; j < balls.length; j++) {
+			ctx.beginPath();
+            let gradient = ctx.createLinearGradient(boards[i].x, boards[i].y, balls[j].x, balls[j].y);
+            gradient.addColorStop(0, boards[i].color);
+            gradient.addColorStop(1, balls[j].color);
+            ctx.beginPath();
+            ctx.lineCap = 'round';
+            ctx.setLineDash([1, 10]);
+            ctx.moveTo(boards[i].x, boards[i].y + boards[i].height / 2);
+            ctx.lineTo(balls[j].x, balls[j].y);
+            ctx.strokeStyle = gradient;
+            ctx.stroke();
+            ctx.closePath();
+		}
+	}
+}
+
+// Прорисовка скорости мяча
+function showBallSpeed () {
+	ctx.beginPath();
+	ctx.font = "60pt Courier New";
+	ctx.shadowBlur = 15;
+	ctx.fillStyle = '#FD2969';
+	ctx.shadowColor = '#FD2969s';
+	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - 230, canvas.height / 2 - 200);
+	ctx.closePath();
+	if (balls[0].speed.toFixed(1) > maxSpeed) {
+		maxSpeed = balls[0].speed.toFixed(1);
+	}
+}
+
+function showMaxSpeed () {
+	ctx.beginPath();
+	ctx.font = "60pt Courier New";
+	ctx.shadowBlur = 15;
+	ctx.fillStyle = '#57FF3A';
+	ctx.shadowColor = '#57FF3A';
+	ctx.fillText('Max Speed: ' + maxSpeed, canvas.width / 2 - 310, 100);
+	ctx.closePath();  
+}
+
+// Начальная инициализация объектов
 function init() {
-    pushShields();
-    pushBalls(3);
+	pushBoards();
+
+	pushBalls(numberOfBalls);
 }
 
 init();
 
-function pushShields() {
-    for (let i = 0; i < 2; i++) {
-        let radius = 100;
-        let color = shieldColors[i];
-        let mass = 1;
-        let speed = 0;
-        let acceleration = 0.1;
-        let x;
-        let y;
-        let isShield = true;
-        if (i == 0) {
-            x = 0;
-            y = canvas.height / 2;
-        } else if (i == 1) {
-            radius = 450;
-            x = canvas.width;
-            y = canvas.height / 2;
-        }
-        particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, isShield));
-    }
+// Добавление досок
+function pushBoards() {
+	for (let i = 0; i < 2; i++) {
+		let width = 10;
+		let height = 200;
+		let color = boardColors[i];
+		let mass = 1;
+		let speed = 0;
+		let acceleration = 0.1;
+		let x = (i == 0) ? 0 : canvas.width - width;
+		let y = canvas.height / 2;
+
+		boards.push(new Board(i, x, y, width, height, mass, speed, acceleration, color));
+	}
 }
 
+// Добавление мячей
 function pushBalls(numberOfBalls) {
-    for (let i = 2; i < 2 + numberOfBalls; i++) {
-        let radius = 15;
-        let color = randomColor();
-        let mass = 1;
-        let speed = 30;
-        let acceleration = 0.1;
-        let isShield = false;
-        let x = randomIntFromRange(radius, canvas.width - radius);
-        let y = randomIntFromRange(radius, canvas.height - radius);
+	for (let i = 0; i < numberOfBalls; i++) {
+		let radius = 15;
+		let color = randomColor();
+		let mass = 1;
+		let speed = 15;
+		let acceleration = 0.02;
+		let x = randomIntFromRange(canvas.width / 2 - 40, canvas.width / 2 + 40);
+		let y = randomIntFromRange(radius, canvas.height - radius);
 
-        for (let j = 0; j < particles.length; j++) {
-            if (getDistance(x, y, particles[j].x, particles[j].y) - radius * 2 < 0) {
-                x = randomIntFromRange(radius, canvas.width - radius);
-                y = randomIntFromRange(radius, canvas.height - radius);
+		for (let j = 0; j < balls.length; j++) {
+			if (getDistance(x, y, balls[j].x, balls[j].y) - radius * 2 < 0) {
+				x = randomIntFromRange(radius, canvas.width - radius);
+				y = randomIntFromRange(radius, canvas.height - radius);
 
-                j = -1;
-            }
-        }
+				j = -1;
+			}
+		}
 
-        particles.push(new Particle(i, x, y, radius, mass, speed, acceleration, color, isShield));
-    }
+		balls.push(new Ball(i, x, y, radius, mass, speed, acceleration, color));
+	}
+
+	// balls.push(new Ball(0, canvas.width - 20, canvas.height / 2, 15, 1, 8, 0.1, 'lightgreen'));
+	// balls[0].velocity.x = -1;
+	// balls[0].velocity.y = 0;
 }
 
 function animate() {
-    requestAnimationFrame(animate);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+	requestAnimationFrame(animate);
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (particles.length < 3) {
-        pushBalls(3);
-    }
+	if (balls.length <= 0) {
+		pushBalls(numberOfBalls);
+	}
 
-    for (let i = 0; i < particles.length; i++) {
-        particles[i].Update(particles);
-    }
+	for (let i = 0; i < boards.length; i++) {
+		boards[i].Update();
+	}
 
-    if (sKeyDown) {
-        particles[0].y += 5 + particles[0].acceleration;
-        particles[0].acceleration += 0.5;
-        if (particles[0].y > canvas.height - particles[0].radius) {
-            particles[0].y = canvas.height - particles[0].radius;
-        }
-    } else if (wKeyDown) {
-        particles[0].y -= 5 - particles[0].acceleration;
-        particles[0].acceleration -= 0.5;
-        if (particles[0].y < particles[0].radius) {
-            particles[0].y = particles[0].radius;
-        }
-    }
+	for (let i = 0; i < balls.length; i++) {
+		balls[i].Update(balls);
+	}
 
-    if (arrowDownKeyDown) {
-        particles[1].y += 5 + particles[1].acceleration;
-        particles[1].acceleration += 0.5;
-        if (particles[1].y > canvas.height - particles[1].radius) {
-            particles[1].y = canvas.height - particles[1].radius;
-        }
-    } else if (arrowUpKeyDown) {
-        particles[1].y -= 5 - particles[1].acceleration;
-        particles[1].acceleration -= 0.5;
-        if (particles[1].y < particles[1].radius) {
-            particles[1].y = particles[1].radius;
-        }
-    }
+	showResult()
+	showLineBetweenBoardAndBall()
+	if (balls.length == 1) {
+		showBallSpeed();
+	}
+	showMaxSpeed();
+
+	if (sKeyDown) {
+		boards[0].y += 5 + boards[0].acceleration;
+		boards[0].acceleration += 0.5;
+		if (boards[0].y > canvas.height - boards[0].height) {
+			boards[0].y = canvas.height - boards[0].height;
+		}
+	} else if (wKeyDown) {
+		boards[0].y -= 5 - boards[0].acceleration;
+		boards[0].acceleration -= 0.5;
+		if (boards[0].y < 0) {
+			boards[0].y = 0;
+		}
+	}
+
+	if (arrowDownKeyDown) {
+		boards[1].y += 5 + boards[1].acceleration;
+		boards[1].acceleration += 0.5;
+		if (boards[1].y > canvas.height - boards[1].height) {
+			boards[1].y = canvas.height - boards[1].height;
+		}
+	} else if (arrowUpKeyDown) {
+		boards[1].y -= 5 - boards[1].acceleration;
+		boards[1].acceleration -= 0.5;
+		if (boards[1].y < 0) {
+			boards[1].y = 0;
+		}
+	}
 }
 
 animate();
 
 function randomIntFromRange(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
+	return Math.floor(Math.random() * (max - min) + min);
 };
 
 function randomColorFromArray(colors) {
-    return colors[Math.floor(Math.random() * colors.length)];
+	return colors[Math.floor(Math.random() * colors.length)];
 }
 
 function randomColor() {
-    let redHex = Math.floor(Math.random() * 255).toString(16);
-    let greenHex = Math.floor(Math.random() * 255).toString(16);
-    let blueHex = Math.floor(Math.random() * 255).toString(16);
-    if (redHex.length == 1) {
-        redHex = '0' + redHex;
-    }
-    if (greenHex.length == 1) {
-        greenHex = '0' + greenHex;
-    }
+	let redHex = Math.floor(Math.random() * 255).toString(16);
+	let greenHex = Math.floor(Math.random() * 255).toString(16);
+	let blueHex = Math.floor(Math.random() * 255).toString(16);
+	if (redHex.length == 1) {
+		redHex = '0' + redHex;
+	}
+	if (greenHex.length == 1) {
+		greenHex = '0' + greenHex;
+	}
 
-    if (blueHex.length == 1) {
-        blueHex = '0' + blueHex;
-    }
+	if (blueHex.length == 1) {
+		blueHex = '0' + blueHex;
+	}
 
-    return '#' + redHex + greenHex + blueHex;
+	return '#' + redHex + greenHex + blueHex;
 }
 
 function getDistance(x1, y1, x2, y2) {
-    let xDistance = x2 - x1;
-    let yDistance = y2 - y1;
+	let xDistance = x2 - x1;
+	let yDistance = y2 - y1;
 
-    return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+	return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
 }
 
 function rotate(velocity, angle) {
-    const rotatedVelocities = {
-        x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
-        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
-    };
+	const rotatedVelocities = {
+		x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+		y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+	};
 
-    return rotatedVelocities;
+	return rotatedVelocities;
 }
 
-function resolveCollision(particle, otherParticle) {
-    const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
-    const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
+function resolveCollision(Ball, otherBall) {
+	const xVelocityDiff = Ball.velocity.x - otherBall.velocity.x;
+	const yVelocityDiff = Ball.velocity.y - otherBall.velocity.y;
 
-    const xDist = otherParticle.x - particle.x;
-    const yDist = otherParticle.y - particle.y;
+	const xDist = otherBall.x - Ball.x;
+	const yDist = otherBall.y - Ball.y;
 
-    // Prevent accidental overlap of particles
-    if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
-        // Grab angle between the two colliding particles
-        const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+	// Prevent accidental overlap of balls
+	if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+		// Grab angle between the two colliding balls
+		const angle = -Math.atan2(otherBall.y - Ball.y, otherBall.x - Ball.x);
 
-        // Store mass in var for better readability in collision equation
-        const m1 = particle.mass;
-        const m2 = otherParticle.mass;
+		// Store mass in var for better readability in collision equation
+		const m1 = Ball.mass;
+		const m2 = otherBall.mass;
 
-        // Velocity before equation
-        const u1 = rotate(particle.velocity, angle);
-        const u2 = rotate(otherParticle.velocity, angle);
+		// Velocity before equation
+		const u1 = rotate(Ball.velocity, angle);
+		const u2 = rotate(otherBall.velocity, angle);
 
-        // Velocity after 1d collision equation
-        const v1 = {
-            x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2),
-            y: u1.y
-        };
-        const v2 = {
-            x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2),
-            y: u2.y
-        };
+		// Velocity after 1d collision equation
+		const v1 = {
+			x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2),
+			y: u1.y
+		};
+		const v2 = {
+			x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2),
+			y: u2.y
+		};
 
-        // Final velocity after rotating axis back to original location
-        const vFinal1 = rotate(v1, -angle);
-        const vFinal2 = rotate(v2, -angle);
+		// Final velocity after rotating axis back to original location
+		const vFinal1 = rotate(v1, -angle);
+		const vFinal2 = rotate(v2, -angle);
 
-        // Swap particle velocities for realistic bounce effect
-        particle.velocity.x = vFinal1.x;
-        particle.velocity.y = vFinal1.y;
+		// Swap Ball velocities for realistic bounce effect
+		Ball.velocity.x = vFinal1.x;
+		Ball.velocity.y = vFinal1.y;
 
-        otherParticle.velocity.x = vFinal2.x;
-        otherParticle.velocity.y = vFinal2.y;
-    }
+		otherBall.velocity.x = vFinal2.x;
+		otherBall.velocity.y = vFinal2.y;
+	}
 }
