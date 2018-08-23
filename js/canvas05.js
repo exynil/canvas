@@ -8,7 +8,7 @@ var wKeyDown;
 var sKeyDown;
 var arrowUpKeyDown;
 var arrowDownKeyDown;
-var numberOfBalls = 3;
+var numberOfBalls = 1;
 var maxSpeed = 0;
 var animationId;
 var animationState = true;
@@ -38,10 +38,16 @@ addEventListener('keydown', function(event) {
 				ctx.fillStyle = 'rgba(0, 0, 0,0.8)';
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				ctx.restore();
+				ctx.save();
 				ctx.beginPath();
-				ctx.font = "60pt Courier New";
-				ctx.fillStyle = '#FD2969';
-				ctx.fillText('<PAUSE>', canvas.width / 2 - 150, canvas.height / 2);
+				ctx.shadowBlur = 10;
+				ctx.shadowColor = '#F50338';
+				ctx.font = "bold 60pt Courier New";
+				ctx.fillStyle = '#F50338';
+				ctx.fillText('<PAUSE>', canvas.width / 2 - 145, canvas.height / 2);
+				ctx.font = "bold 20pt Courier New";
+				ctx.fillText('<PING PONG by exynil>', canvas.width / 2 - 140, canvas.height / 2 + 100);
+				ctx.fillText('<2018>', canvas.width / 2 - 30, canvas.height / 2 + 200);
 				ctx.restore();
 				ctx.closePath();
 			} else {
@@ -321,10 +327,10 @@ function drawLinesBetweenBalls() {
 function drawBallSpeed() {
 	ctx.beginPath();
 	ctx.save();
-	ctx.font = "60pt Courier New";
+	ctx.font = "bold 60pt Courier New";
 	ctx.shadowBlur = 15;
-	ctx.shadowColor = '#FD2969';
-	ctx.fillStyle = '#FD2969';
+	ctx.shadowColor = '#F50338';
+	ctx.fillStyle = '#F50338';
 	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - 230, canvas.height / 2 - 200);
 	ctx.restore();
 	ctx.closePath();
@@ -337,11 +343,11 @@ function drawBallSpeed() {
 function drawMaxSpeed() {
 	ctx.beginPath();
 	ctx.save();
-	ctx.font = "60pt Courier New";
+	ctx.font = "bold 40pt Courier New";
 	ctx.shadowBlur = 15;
 	ctx.shadowColor = '#57FF3A';
 	ctx.fillStyle = '#57FF3A';
-	ctx.fillText('Max Speed: ' + maxSpeed, canvas.width / 2 - 310, 100);
+	ctx.fillText('Record Speed: ' + maxSpeed, canvas.width / 2 - 250, 100);
 	ctx.restore();
 	ctx.closePath();
 }
