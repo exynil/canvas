@@ -8,7 +8,7 @@ var wKeyDown;
 var sKeyDown;
 var arrowUpKeyDown;
 var arrowDownKeyDown;
-var numberOfBalls = 2;
+var numberOfBalls = 3;
 var maxSpeed = 0;
 
 canvas.width = innerWidth;
@@ -151,21 +151,6 @@ class Ball {
             if (getDistance(this.x, this.y, balls[i].x, balls[i].y) - this.radius - balls[i].radius < 0) {
                 resolveCollision(this, balls[i]);
             }
-
-            if (this.id < i) {
-            	ctx.beginPath();
-                let gradient = ctx.createLinearGradient(this.x, this.y, balls[i].x, balls[i].y);
-                gradient.addColorStop(0, this.color);
-                gradient.addColorStop(1, balls[i].color);
-                ctx.beginPath();
-                ctx.lineCap = 'round';
-                ctx.setLineDash([1, 10]);
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(balls[i].x, balls[i].y);
-                ctx.strokeStyle = gradient;
-                ctx.stroke();
-                ctx.closePath();
-            }
         }
 
 		// Блокировка верхнего и нижнего края
@@ -174,14 +159,14 @@ class Ball {
 		}
 
 		// Блокировкая левого края
-		// if (this.x - this.radius < 0) {
-		// 	this.velocity.x = -this.velocity.x;
-		// }
+		if (this.x - this.radius < 0) {
+			this.velocity.x = -this.velocity.x;
+		}
 
 		// Блокировкая правого края
-		// if (this.x + this.radius > innerWidth) {
-		// 	this.velocity.x = -this.velocity.x;
-		// }
+		if (this.x + this.radius > innerWidth) {
+			this.velocity.x = -this.velocity.x;
+		}
 
 		// Передвигаем мяч по вектору движения
 		this.x += this.velocity.x * this.speed;
@@ -214,7 +199,7 @@ class Ball {
 }
 
 // Вывод результата игроков
-function showResult() {
+function drawResult() {
 	for (let i = 0; i < boards.length; i++) {
 		ctx.beginPath();
 		ctx.font = "60pt Arial";
@@ -233,7 +218,7 @@ function showResult() {
 }
 
 // Прорисовка линий между доской и мячом
-function showLineBetweenBoardAndBall() {
+function drawLineBetweenBoardAndBall() {
 	for (let i = 0; i < boards.length; i++) {
 		for (let j = 0; j < balls.length; j++) {
 			ctx.beginPath();
@@ -252,26 +237,50 @@ function showLineBetweenBoardAndBall() {
 	}
 }
 
+// Прорисовка линий мячиками
+function drawLinesBetweenBalls() {
+	for (let i = 0; i < balls.length; i++) {
+		for (let j = 0; j< balls.length; j++) {
+			if (i == j) continue;
+			if (i < j) {
+            	ctx.beginPath();
+                let gradient = ctx.createLinearGradient(balls[i].x, balls[i].y, balls[j].x, balls[j].y);
+                gradient.addColorStop(0, balls[i].color);
+                gradient.addColorStop(1, balls[j].color);
+                ctx.beginPath();
+                ctx.lineCap = 'round';
+                ctx.setLineDash([1, 10]);
+                ctx.moveTo(balls[i].x, balls[i].y);
+                ctx.lineTo(balls[j].x, balls[j].y);
+                ctx.strokeStyle = gradient;
+                ctx.stroke();
+                ctx.closePath();
+            }
+		}   
+    }
+}
+
 // Прорисовка скорости мяча
-function showBallSpeed () {
+function drawBallSpeed () {
 	ctx.beginPath();
 	ctx.font = "60pt Courier New";
 	ctx.shadowBlur = 15;
+	ctx.shadowColor = '#FD2969';
 	ctx.fillStyle = '#FD2969';
-	ctx.shadowColor = '#FD2969s';
 	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - 230, canvas.height / 2 - 200);
 	ctx.closePath();
-	if (balls[0].speed.toFixed(1) > maxSpeed) {
-		maxSpeed = balls[0].speed.toFixed(1);
+	if (+balls[0].speed.toFixed(1) > maxSpeed) {
+		maxSpeed = +balls[0].speed.toFixed(1);
 	}
 }
 
-function showMaxSpeed () {
+// Прорисовка максимальной скорости
+function drawMaxSpeed () {
 	ctx.beginPath();
 	ctx.font = "60pt Courier New";
 	ctx.shadowBlur = 15;
-	ctx.fillStyle = '#57FF3A';
 	ctx.shadowColor = '#57FF3A';
+	ctx.fillStyle = '#57FF3A';
 	ctx.fillText('Max Speed: ' + maxSpeed, canvas.width / 2 - 310, 100);
 	ctx.closePath();  
 }
@@ -324,9 +333,9 @@ function pushBalls(numberOfBalls) {
 		balls.push(new Ball(i, x, y, radius, mass, speed, acceleration, color));
 	}
 
-	// balls.push(new Ball(0, canvas.width - 20, canvas.height / 2, 15, 1, 8, 0.1, 'lightgreen'));
-	// balls[0].velocity.x = -1;
-	// balls[0].velocity.y = 0;
+	// balls.push(new Ball(0, canvas.width / 2, canvas.height / 2, 15, 1, 8, 0.1, 'lightgreen'));
+	// balls[0].velocity.x = 0;
+	// balls[0].velocity.y = 1;
 }
 
 function animate() {
@@ -345,12 +354,13 @@ function animate() {
 		balls[i].Update(balls);
 	}
 
-	showResult()
-	showLineBetweenBoardAndBall()
+	drawResult()
+	drawLineBetweenBoardAndBall();
+	drawLinesBetweenBalls();
 	if (balls.length == 1) {
-		showBallSpeed();
+		drawBallSpeed();
 	}
-	showMaxSpeed();
+	drawMaxSpeed();
 
 	if (sKeyDown) {
 		boards[0].y += 5 + boards[0].acceleration;
