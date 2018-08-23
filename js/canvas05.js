@@ -10,6 +10,9 @@ var arrowUpKeyDown;
 var arrowDownKeyDown;
 var numberOfBalls = 3;
 var maxSpeed = 0;
+var animationId;
+var animationState = true;
+var limitation = 10;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -21,35 +24,62 @@ addEventListener('resize', function() {
 });
 
 addEventListener('keydown', function(event) {
-	if (event.keyCode == 27) {
-		location.href = '../index.html';
-	}
-});
+	// console.log(event);
 
-addEventListener('keydown', function(event) {
-	if (event.keyCode == 87) {
+	switch (event.code) {
+		case 'Escape':
+			location.href = '../index.html';
+			break;
+		case 'Space':
+			if (animationState) {
+				cancelAnimationFrame(animationId);
+				animationState = false;
+				ctx.save();
+				ctx.fillStyle = 'rgba(0, 0, 0,0.8)';
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.restore();
+				ctx.beginPath();
+				ctx.font = "60pt Courier New";
+				ctx.fillStyle = '#FD2969';
+				ctx.fillText('PAUSE', canvas.width / 2 - 100, canvas.height / 2);
+				ctx.restore();
+				ctx.closePath();
+			} else {
+				animate();
+				animationState = true;
+			}
+			break;
+		case 'Enter':
+			pushBalls(1);
+			break;
+		default:
+			// statements_def
+			break;
+	}
+
+	if (event.code == 'KeyW') {
 		wKeyDown = true;
 		boards
-	} else if (event.keyCode == 83) {
+	} else if (event.code == 'KeyS') {
 		sKeyDown = true;
-	} else if (event.keyCode == 40) {
+	} else if (event.code == 'ArrowDown') {
 		arrowDownKeyDown = true;
-	} else if (event.keyCode == 38) {
+	} else if (event.code == 'ArrowUp') {
 		arrowUpKeyDown = true;
 	}
 });
 
 addEventListener('keyup', function(event) {
-	if (event.keyCode == 87) {
+	if (event.code == 'KeyW') {
 		wKeyDown = false;
 		boards[0].acceleration = 1;
-	} else if (event.keyCode == 83) {
+	} else if (event.code == 'KeyS') {
 		sKeyDown = false;
 		boards[0].acceleration = 1;
-	} else if (event.keyCode == 40) {
+	} else if (event.code == 'ArrowDown') {
 		arrowDownKeyDown = false;
 		boards[1].acceleration = 1;
-	} else if (event.keyCode == 38) {
+	} else if (event.code == 'ArrowUp') {
 		arrowUpKeyDown = false;
 		boards[1].acceleration = 1;
 	}
@@ -79,16 +109,23 @@ class Board {
 
 	Draw() {
 		ctx.beginPath();
+		ctx.save();
+		ctx.shadowBlur = 30;
+		ctx.shadowColor = this.color;
 		ctx.strokeStyle = this.color;
+		ctx.setLineDash([5, 10]);
 		ctx.arc(this.x, this.y + this.height / 2, 100, 0, Math.PI * 2, false);
 		ctx.stroke();
+		ctx.restore();
 		ctx.closePath();
 
 		ctx.beginPath();
+		ctx.save();
 		ctx.shadowBlur = 30;
 		ctx.shadowColor = this.color;
 		ctx.fillStyle = this.color;
 		ctx.fillRect(this.x, this.y, this.width, this.height);
+		ctx.restore();
 		ctx.closePath();
 	}
 }
@@ -147,11 +184,11 @@ class Ball {
 
 		// Обнаружение столкновений мяча с другими мячами
 		for (let i = 0; i < balls.length; i++) {
-            if (this === balls[i]) continue;
-            if (getDistance(this.x, this.y, balls[i].x, balls[i].y) - this.radius - balls[i].radius < 0) {
-                resolveCollision(this, balls[i]);
-            }
-        }
+			if (this === balls[i]) continue;
+			if (getDistance(this.x, this.y, balls[i].x, balls[i].y) - this.radius - balls[i].radius < 0) {
+				resolveCollision(this, balls[i]);
+			}
+		}
 
 		// Блокировка верхнего и нижнего края
 		if (this.y - this.radius <= 0 || this.y + this.radius >= innerHeight) {
@@ -159,14 +196,14 @@ class Ball {
 		}
 
 		// Блокировкая левого края
-		if (this.x - this.radius < 0) {
-			this.velocity.x = -this.velocity.x;
-		}
+		// if (this.x - this.radius < 0) {
+		// 	this.velocity.x = -this.velocity.x;
+		// }
 
 		// Блокировкая правого края
-		if (this.x + this.radius > innerWidth) {
-			this.velocity.x = -this.velocity.x;
-		}
+		// if (this.x + this.radius > innerWidth) {
+		// 	this.velocity.x = -this.velocity.x;
+		// }
 
 		// Передвигаем мяч по вектору движения
 		this.x += this.velocity.x * this.speed;
@@ -177,24 +214,38 @@ class Ball {
 	Draw() {
 		// Прорисовка внутреннего круга мяча
 		ctx.beginPath();
+		ctx.save();
 		ctx.shadowBlur = 30;
 		ctx.shadowColor = this.color;
 		ctx.fillStyle = this.color;
 		ctx.arc(this.x, this.y, this.radius - this.radius / 2, Math.PI * 2, false);
 		ctx.fill();
+		ctx.restore();
 		ctx.closePath();
 
 		// Прорисовка внешнего круга мяча
 		ctx.beginPath();
+		ctx.save();
 		ctx.shadowBlur = 30;
 		ctx.shadowColor = this.color;
 		ctx.fillStyle = this.color;
 		ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
 		ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
 		ctx.fill('evenodd');
+		ctx.restore();
 		ctx.closePath();
 
-		// Линейка (в планах)
+		// Прорисвока вектора скорости
+		ctx.beginPath();
+		ctx.save();
+		ctx.font = "20pt Courier New";
+		ctx.shadowBlur = 15;
+		ctx.shadowColor = this.color;
+		ctx.fillStyle = this.color;
+		ctx.fillText('vx:' + +this.velocity.x.toFixed(2), this.x + 20, this.y);
+		ctx.fillText('vy:' + +this.velocity.y.toFixed(2), this.x + 20, this.y + 20);
+		ctx.restore();
+		ctx.closePath();
 	}
 }
 
@@ -202,7 +253,8 @@ class Ball {
 function drawResult() {
 	for (let i = 0; i < boards.length; i++) {
 		ctx.beginPath();
-		ctx.font = "60pt Arial";
+		ctx.save();
+		ctx.font = "60pt Courier New";
 		ctx.shadowBlur = 15;
 		if (boards[i].id == 0) {
 			ctx.fillStyle = boards[i].color;
@@ -213,6 +265,7 @@ function drawResult() {
 			ctx.shadowColor = boards[i].color;
 			ctx.fillText(boards[i].numberOfWins, canvas.width / 2 + 100, canvas.height / 2);
 		}
+		ctx.restore();
 		ctx.closePath();
 	}
 }
@@ -222,17 +275,19 @@ function drawLineBetweenBoardAndBall() {
 	for (let i = 0; i < boards.length; i++) {
 		for (let j = 0; j < balls.length; j++) {
 			ctx.beginPath();
-            let gradient = ctx.createLinearGradient(boards[i].x, boards[i].y, balls[j].x, balls[j].y);
-            gradient.addColorStop(0, boards[i].color);
-            gradient.addColorStop(1, balls[j].color);
-            ctx.beginPath();
-            ctx.lineCap = 'round';
-            ctx.setLineDash([1, 10]);
-            ctx.moveTo(boards[i].x, boards[i].y + boards[i].height / 2);
-            ctx.lineTo(balls[j].x, balls[j].y);
-            ctx.strokeStyle = gradient;
-            ctx.stroke();
-            ctx.closePath();
+			ctx.save();
+			let gradient = ctx.createLinearGradient(boards[i].x, boards[i].y, balls[j].x, balls[j].y);
+			gradient.addColorStop(0, boards[i].color);
+			gradient.addColorStop(1, balls[j].color);
+			ctx.beginPath();
+			ctx.lineCap = 'round';
+			ctx.setLineDash([1, 10]);
+			ctx.moveTo(boards[i].x, boards[i].y + boards[i].height / 2);
+			ctx.lineTo(balls[j].x, balls[j].y);
+			ctx.strokeStyle = gradient;
+			ctx.stroke();
+			ctx.restore();
+			ctx.closePath();
 		}
 	}
 }
@@ -240,34 +295,38 @@ function drawLineBetweenBoardAndBall() {
 // Прорисовка линий мячиками
 function drawLinesBetweenBalls() {
 	for (let i = 0; i < balls.length; i++) {
-		for (let j = 0; j< balls.length; j++) {
+		for (let j = 0; j < balls.length; j++) {
 			if (i == j) continue;
 			if (i < j) {
-            	ctx.beginPath();
-                let gradient = ctx.createLinearGradient(balls[i].x, balls[i].y, balls[j].x, balls[j].y);
-                gradient.addColorStop(0, balls[i].color);
-                gradient.addColorStop(1, balls[j].color);
-                ctx.beginPath();
-                ctx.lineCap = 'round';
-                ctx.setLineDash([1, 10]);
-                ctx.moveTo(balls[i].x, balls[i].y);
-                ctx.lineTo(balls[j].x, balls[j].y);
-                ctx.strokeStyle = gradient;
-                ctx.stroke();
-                ctx.closePath();
-            }
-		}   
-    }
+				ctx.beginPath();
+				ctx.save();
+				let gradient = ctx.createLinearGradient(balls[i].x, balls[i].y, balls[j].x, balls[j].y);
+				gradient.addColorStop(0, balls[i].color);
+				gradient.addColorStop(1, balls[j].color);
+				ctx.beginPath();
+				ctx.lineCap = 'round';
+				ctx.setLineDash([1, 10]);
+				ctx.moveTo(balls[i].x, balls[i].y);
+				ctx.lineTo(balls[j].x, balls[j].y);
+				ctx.strokeStyle = gradient;
+				ctx.stroke();
+				ctx.restore();
+				ctx.closePath();
+			}
+		}
+	}
 }
 
 // Прорисовка скорости мяча
-function drawBallSpeed () {
+function drawBallSpeed() {
 	ctx.beginPath();
+	ctx.save();
 	ctx.font = "60pt Courier New";
 	ctx.shadowBlur = 15;
 	ctx.shadowColor = '#FD2969';
 	ctx.fillStyle = '#FD2969';
 	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - 230, canvas.height / 2 - 200);
+	ctx.restore();
 	ctx.closePath();
 	if (+balls[0].speed.toFixed(1) > maxSpeed) {
 		maxSpeed = +balls[0].speed.toFixed(1);
@@ -275,14 +334,16 @@ function drawBallSpeed () {
 }
 
 // Прорисовка максимальной скорости
-function drawMaxSpeed () {
+function drawMaxSpeed() {
 	ctx.beginPath();
+	ctx.save();
 	ctx.font = "60pt Courier New";
 	ctx.shadowBlur = 15;
 	ctx.shadowColor = '#57FF3A';
 	ctx.fillStyle = '#57FF3A';
 	ctx.fillText('Max Speed: ' + maxSpeed, canvas.width / 2 - 310, 100);
-	ctx.closePath();  
+	ctx.restore();
+	ctx.closePath();
 }
 
 // Начальная инициализация объектов
@@ -312,34 +373,38 @@ function pushBoards() {
 
 // Добавление мячей
 function pushBalls(numberOfBalls) {
-	for (let i = 0; i < numberOfBalls; i++) {
-		let radius = 15;
-		let color = randomColor();
-		let mass = 1;
-		let speed = 15;
-		let acceleration = 0.02;
-		let x = randomIntFromRange(canvas.width / 2 - 40, canvas.width / 2 + 40);
-		let y = randomIntFromRange(radius, canvas.height - radius);
+	if (balls.length < limitation) {
+		let lastBallsLength = balls.length;
+		for (let i = lastBallsLength; i < lastBallsLength + numberOfBalls; i++) {
+			let radius = 15;
+			let color = randomColor();
+			let mass = 1;
+			let speed = 15;
+			let acceleration = 0.02;
+			let x = randomIntFromRange(canvas.width / 2 - 40, canvas.width / 2 + 40);
+			let y = randomIntFromRange(radius, canvas.height - radius);
 
-		for (let j = 0; j < balls.length; j++) {
-			if (getDistance(x, y, balls[j].x, balls[j].y) - radius * 2 < 0) {
-				x = randomIntFromRange(radius, canvas.width - radius);
-				y = randomIntFromRange(radius, canvas.height - radius);
+			for (let j = 0; j < balls.length; j++) {
+				if (getDistance(x, y, balls[j].x, balls[j].y) - radius * 2 < 0) {
+					x = randomIntFromRange(radius, canvas.width - radius);
+					y = randomIntFromRange(radius, canvas.height - radius);
 
-				j = -1;
+					j = -1;
+				}
 			}
+
+			balls.push(new Ball(i, x, y, radius, mass, speed, acceleration, color));
 		}
 
-		balls.push(new Ball(i, x, y, radius, mass, speed, acceleration, color));
+		// balls.push(new Ball(0, canvas.width / 2, canvas.height / 2, 15, 1, 8, 0.1, 'lightgreen'));
+		// balls[0].velocity.x = 0;
+		// balls[0].velocity.y = 1;
 	}
 
-	// balls.push(new Ball(0, canvas.width / 2, canvas.height / 2, 15, 1, 8, 0.1, 'lightgreen'));
-	// balls[0].velocity.x = 0;
-	// balls[0].velocity.y = 1;
 }
 
 function animate() {
-	requestAnimationFrame(animate);
+	animationId = requestAnimationFrame(animate);
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	if (balls.length <= 0) {
