@@ -41,7 +41,7 @@ addEventListener('keydown', function(event) {
 				ctx.beginPath();
 				ctx.font = "60pt Courier New";
 				ctx.fillStyle = '#FD2969';
-				ctx.fillText('PAUSE', canvas.width / 2 - 100, canvas.height / 2);
+				ctx.fillText('<PAUSE>', canvas.width / 2 - 150, canvas.height / 2);
 				ctx.restore();
 				ctx.closePath();
 			} else {
@@ -113,7 +113,7 @@ class Board {
 		ctx.shadowBlur = 30;
 		ctx.shadowColor = this.color;
 		ctx.strokeStyle = this.color;
-		ctx.setLineDash([5, 10]);
+		ctx.setLineDash([10, 10]);
 		ctx.arc(this.x, this.y + this.height / 2, 100, 0, Math.PI * 2, false);
 		ctx.stroke();
 		ctx.restore();
