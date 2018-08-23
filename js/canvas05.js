@@ -367,8 +367,8 @@ function drawMaxSpeed() {
 	ctx.save();
 	ctx.font = "30pt Courier New";
 	ctx.shadowBlur = 15;
-	ctx.shadowColor = '#87E876';
-	ctx.fillStyle = '#87E876';
+	ctx.shadowColor = '#00E8FF';
+	ctx.fillStyle = '#00E8FF';
 	ctx.fillText('Max Speed: ' + maxSpeed, canvas.width / 2 - ctx.measureText('Max Speed: ' + maxSpeed).width / 2, 100);
 	ctx.restore();
 	ctx.closePath();
@@ -380,8 +380,8 @@ function drawBallSpeed() {
 	ctx.save();
 	ctx.font = "30pt Courier New";
 	ctx.shadowBlur = 15;
-	ctx.shadowColor = '#FF9D82';
-	ctx.fillStyle = '#FF9D82';
+	ctx.shadowColor = '#FF7400';
+	ctx.fillStyle = '#FF7400';
 	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - ctx.measureText('Speed: ' + balls[0].speed.toFixed(1)).width / 2, canvas.height / 2 - 200);
 	ctx.restore();
 	ctx.closePath();
@@ -396,15 +396,15 @@ function drawTimer() {
 	ctx.save();
 	ctx.font = "30pt Courier New";
 	ctx.shadowBlur = 15;
-	if (timer > 1 && timer < 5) {
+	if (timer > 10) {
+		ctx.shadowColor = '#58FF4D';
+		ctx.fillStyle = '#58FF4D';
+	} else if (timer > 5) {
 		ctx.shadowColor = '#E8AB02';
 		ctx.fillStyle = '#E8AB02';
-	} else if (timer < 2) {
+	} else {
 		ctx.shadowColor = '#F50338';
 		ctx.fillStyle = '#F50338'
-	} else {
-		ctx.shadowColor = '#87E876';
-		ctx.fillStyle = '#87E876';
 	}
 	ctx.fillText('Timer: ' + timer, canvas.width / 2 - ctx.measureText('Timer: ' + timer).width / 2, canvas.height - 100);
 	ctx.restore();
@@ -536,7 +536,7 @@ setInterval(function (argument) {
 	timer--;
 	if (timer < 0) {
 		redirectAllBalls();
-		timer = 30;
+		timer = 45;
 	}
 }, 1000);
 
