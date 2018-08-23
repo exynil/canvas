@@ -24,8 +24,6 @@ addEventListener('resize', function() {
 });
 
 addEventListener('keydown', function(event) {
-	// console.log(event.code);
-
 	switch (event.code) {
 		case 'Escape':
 			location.href = '../index.html';
@@ -65,7 +63,7 @@ addEventListener('keydown', function(event) {
 			}
 			break;
 		default:
-			// statements_def
+			// console.log(event.code);
 			break;
 	}
 
