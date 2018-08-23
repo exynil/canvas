@@ -13,6 +13,7 @@ var maxSpeed = 0;
 var animationId;
 var animationState = true;
 var limitation = 10;
+var timer = 45;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -57,9 +58,16 @@ addEventListener('keydown', function(event) {
 			pushBalls(1);
 			break;
 		case 'KeyR':
+			redirectAllBalls();
+			break;
+		case 'Numpad1':
 			for (let i = 0; i < balls.length; i++) {
-				balls[i].velocity.x = Math.random() - 0.5;
-				balls[i].velocity.y = Math.random() - 0.5;
+				localStorage.setItem(i, JSON.stringify(balls[i]));
+			}
+			break;
+		case 'Numpad2':
+			for (let i = 0; i < balls.length; i++) {
+				balls[i] = JSON.parse(localStorage.getItem(i));
 			}
 			break;
 		default:
@@ -248,12 +256,24 @@ class Ball {
 		// Прорисвока вектора скорости
 		ctx.beginPath();
 		ctx.save();
-		ctx.font = "20pt Courier New";
+		ctx.font = "10pt Courier New";
 		ctx.shadowBlur = 15;
 		ctx.shadowColor = this.color;
 		ctx.fillStyle = this.color;
 		ctx.fillText('vx:' + +this.velocity.x.toFixed(2), this.x + 20, this.y);
 		ctx.fillText('vy:' + +this.velocity.y.toFixed(2), this.x + 20, this.y + 20);
+		ctx.restore();
+		ctx.closePath();
+
+		// Прорисвока координат
+		ctx.beginPath();
+		ctx.save();
+		ctx.font = "10pt Courier New";
+		ctx.shadowBlur = 15;
+		ctx.shadowColor = this.color;
+		ctx.fillStyle = this.color;
+		ctx.fillText('x:' + +this.x.toFixed(2), this.x + 20, this.y + 40);
+		ctx.fillText('y:' + +this.y.toFixed(2), this.x + 20, this.y + 60);
 		ctx.restore();
 		ctx.closePath();
 	}
@@ -264,12 +284,12 @@ function drawResult() {
 	for (let i = 0; i < boards.length; i++) {
 		ctx.beginPath();
 		ctx.save();
-		ctx.font = "60pt Courier New";
+		ctx.font = "bold 60pt Courier New";
 		ctx.shadowBlur = 15;
 		if (boards[i].id == 0) {
 			ctx.fillStyle = boards[i].color;
 			ctx.shadowColor = boards[i].color;
-			ctx.fillText(boards[i].numberOfWins, canvas.width / 2 - 100, canvas.height / 2);
+			ctx.fillText(boards[i].numberOfWins, canvas.width / 2 - ctx.measureText(boards[i].numberOfWins).width - 100, canvas.height / 2);
 		} else {
 			ctx.fillStyle = boards[i].color;
 			ctx.shadowColor = boards[i].color;
@@ -278,6 +298,20 @@ function drawResult() {
 		ctx.restore();
 		ctx.closePath();
 	}
+}
+
+function drawMiddleLine() {
+			ctx.beginPath();
+			ctx.save();
+			ctx.beginPath();
+			ctx.lineCap = 'round';
+			ctx.setLineDash([10, 10]);
+			ctx.moveTo(canvas.width / 2, 0);
+			ctx.lineTo(canvas.width / 2, canvas.height);
+			ctx.strokeStyle = 'gray';
+			ctx.stroke();
+			ctx.restore();
+			ctx.closePath();
 }
 
 // Прорисовка линий между доской и мячом
@@ -327,31 +361,52 @@ function drawLinesBetweenBalls() {
 	}
 }
 
-// Прорисовка скорости мяча
-function drawBallSpeed() {
-	ctx.beginPath();
-	ctx.save();
-	ctx.font = "bold 60pt Courier New";
-	ctx.shadowBlur = 15;
-	ctx.shadowColor = '#F50338';
-	ctx.fillStyle = '#F50338';
-	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - 230, canvas.height / 2 - 200);
-	ctx.restore();
-	ctx.closePath();
-	if (+balls[0].speed.toFixed(1) > maxSpeed) {
-		maxSpeed = +balls[0].speed.toFixed(1);
-	}
-}
-
 // Прорисовка максимальной скорости
 function drawMaxSpeed() {
 	ctx.beginPath();
 	ctx.save();
-	ctx.font = "bold 40pt Courier New";
+	ctx.font = "30pt Courier New";
 	ctx.shadowBlur = 15;
-	ctx.shadowColor = '#57FF3A';
-	ctx.fillStyle = '#57FF3A';
-	ctx.fillText('Record Speed: ' + maxSpeed, canvas.width / 2 - 250, 100);
+	ctx.shadowColor = '#87E876';
+	ctx.fillStyle = '#87E876';
+	ctx.fillText('Max Speed: ' + maxSpeed, canvas.width / 2 - ctx.measureText('Max Speed: ' + maxSpeed).width / 2, 100);
+	ctx.restore();
+	ctx.closePath();
+}
+
+// Прорисовка скорости мяча
+function drawBallSpeed() {
+	ctx.beginPath();
+	ctx.save();
+	ctx.font = "30pt Courier New";
+	ctx.shadowBlur = 15;
+	ctx.shadowColor = '#FF9D82';
+	ctx.fillStyle = '#FF9D82';
+	ctx.fillText('Speed: ' + balls[0].speed.toFixed(1), canvas.width / 2 - ctx.measureText('Speed: ' + balls[0].speed.toFixed(1)).width / 2, canvas.height / 2 - 200);
+	ctx.restore();
+	ctx.closePath();
+	if (+balls[0].speed.toFixed(1) > maxSpeed) {
+		maxSpeed = +balls[0].speed.toFixed(0);
+	}
+}
+
+// Прорисовка таймера
+function drawTimer() {
+	ctx.beginPath();
+	ctx.save();
+	ctx.font = "30pt Courier New";
+	ctx.shadowBlur = 15;
+	if (timer > 1 && timer < 5) {
+		ctx.shadowColor = '#E8AB02';
+		ctx.fillStyle = '#E8AB02';
+	} else if (timer < 2) {
+		ctx.shadowColor = '#F50338';
+		ctx.fillStyle = '#F50338'
+	} else {
+		ctx.shadowColor = '#87E876';
+		ctx.fillStyle = '#87E876';
+	}
+	ctx.fillText('Timer: ' + timer, canvas.width / 2 - ctx.measureText('Timer: ' + timer).width / 2, canvas.height - 100);
 	ctx.restore();
 	ctx.closePath();
 }
@@ -389,8 +444,9 @@ function pushBalls(numberOfBalls) {
 			let radius = 15;
 			let color = randomColor();
 			let mass = 1;
-			let speed = 15;
-			let acceleration = 0.02;
+			let speed = 2;
+			// let acceleration = 0.02;
+			let acceleration = 0;
 			let x = randomIntFromRange(canvas.width / 2 - 40, canvas.width / 2 + 40);
 			let y = randomIntFromRange(radius, canvas.height - radius);
 
@@ -410,7 +466,14 @@ function pushBalls(numberOfBalls) {
 		// balls[0].velocity.x = 0;
 		// balls[0].velocity.y = 1;
 	}
+}
 
+// Изменение вектора движения всех мячиков
+function redirectAllBalls() {
+	for (let i = 0; i < balls.length; i++) {
+		balls[i].velocity.x = Math.random() - 0.5;
+		balls[i].velocity.y = Math.random() - 0.5;
+	}
 }
 
 function animate() {
@@ -436,6 +499,8 @@ function animate() {
 		drawBallSpeed();
 	}
 	drawMaxSpeed();
+	drawMiddleLine();
+	drawTimer()
 
 	if (sKeyDown) {
 		boards[0].y += 5 + boards[0].acceleration;
@@ -467,6 +532,14 @@ function animate() {
 }
 
 animate();
+
+setInterval(function (argument) {
+	timer--;
+	if (timer < 0) {
+		redirectAllBalls();
+		timer = 30;
+	}
+}, 1000);
 
 function randomIntFromRange(min, max) {
 	return Math.floor(Math.random() * (max - min) + min);
