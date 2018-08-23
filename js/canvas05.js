@@ -24,7 +24,7 @@ addEventListener('resize', function() {
 });
 
 addEventListener('keydown', function(event) {
-	// console.log(event);
+	// console.log(event.code);
 
 	switch (event.code) {
 		case 'Escape':
@@ -55,8 +55,14 @@ addEventListener('keydown', function(event) {
 				animationState = true;
 			}
 			break;
-		case 'Enter':
+		case 'NumpadAdd':
 			pushBalls(1);
+			break;
+		case 'KeyR':
+			for (let i = 0; i < balls.length; i++) {
+				balls[i].velocity.x = Math.random() - 0.5;
+				balls[i].velocity.y = Math.random() - 0.5;
+			}
 			break;
 		default:
 			// statements_def
