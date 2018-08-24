@@ -14,6 +14,8 @@ var animationId;
 var animationState = true;
 var limitation = 10;
 var timer = 45;
+var timerId;
+var developerMode = true;
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
@@ -34,7 +36,7 @@ addEventListener('keydown', function(event) {
 				cancelAnimationFrame(animationId);
 				animationState = false;
 				ctx.save();
-				ctx.fillStyle = 'rgba(0, 0, 0,0.2)';
+				ctx.fillStyle = 'rgba(0, 0, 0,0.7)';
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				ctx.restore();
 				ctx.save();
@@ -43,15 +45,17 @@ addEventListener('keydown', function(event) {
 				ctx.shadowColor = '#F50338';
 				ctx.font = "bold 60pt Courier New";
 				ctx.fillStyle = '#F50338';
-				ctx.fillText('<PAUSE>', canvas.width / 2 - 145, canvas.height / 2);
+				ctx.fillText('<PAUSE>', canvas.width / 2 - ctx.measureText('<PAUSE>').width / 2, canvas.height / 2);
 				ctx.font = "bold 20pt Courier New";
-				ctx.fillText('<PING PONG by exynil>', canvas.width / 2 - 140, canvas.height / 2 + 100);
-				ctx.fillText('<2018>', canvas.width / 2 - 30, canvas.height / 2 + 200);
+				ctx.fillText('<PING PONG by exynil>', canvas.width / 2 - ctx.measureText('<PING PONG by exynil>').width / 2, canvas.height / 2 + 50);
+				ctx.fillText('<2018>', canvas.width / 2 - ctx.measureText('<2018>').width / 2, canvas.height / 2 + 100);
 				ctx.restore();
 				ctx.closePath();
+				clearInterval(timerId);
 			} else {
 				animate();
 				animationState = true;
+				timerId = setInterval(interval, 1000);
 			}
 			break;
 		case 'NumpadAdd':
@@ -61,8 +65,13 @@ addEventListener('keydown', function(event) {
 			for (let i = 0; i < balls.length; i++) {
 				balls[i].UpdateVelocity();
 			}
-			console.log(event.code);
-			console.log('')
+			break;
+		case 'KeyM':
+			if (developerMode) {
+				developerMode = false;
+			} else {
+				developerMode = true;
+			}
 			break;
 		case 'Numpad0':
 
@@ -166,12 +175,9 @@ class Ball {
 		this.angle = (Math.random() * 6.28).toFixed(2);
 		this.velocity.x = Math.cos(this.angle);
 		this.velocity.y = Math.sin(this.angle);
-		console.log('ИД: ' + this.id + ' запустил UpdateVelocity()');
 	}
 
 	Update(balls) {
-		this.Draw();
-
 		// Проверка на столкновение мяча с левой доской
 		if (this.x - this.radius <= boards[0].x + boards[0].width && this.y >= boards[0].y && this.y <= boards[0].y + boards[0].height) {
 			this.velocity.y *= 1;
@@ -224,14 +230,15 @@ class Ball {
 		// }
 
 		// Блокировкая правого края
-		// if (this.x + this.radius > innerWidth) {
-		// 	this.velocity.x = -this.velocity.x;
-		// }
+		if (this.x + this.radius > innerWidth) {
+			this.velocity.x = -this.velocity.x;
+		}
 
 		// Передвигаем мяч по вектору движения
 		this.x += this.velocity.x * this.speed;
 		this.y += this.velocity.y * this.speed;
 		this.speed += this.acceleration;
+		this.Draw();
 	}
 
 	Draw() {
@@ -255,30 +262,6 @@ class Ball {
 		ctx.arc(this.x, this.y, this.radius, Math.PI * 2, false);
 		ctx.arc(this.x, this.y, this.radius - this.radius / 4, Math.PI * 2, false);
 		ctx.fill('evenodd');
-		ctx.restore();
-		ctx.closePath();
-
-		// Прорисвока вектора скорости
-		ctx.beginPath();
-		ctx.save();
-		ctx.font = "10pt Courier New";
-		ctx.shadowBlur = 15;
-		ctx.shadowColor = this.color;
-		ctx.fillStyle = this.color;
-		ctx.fillText('vx:' + +this.velocity.x.toFixed(2), this.x + 20, this.y);
-		ctx.fillText('vy:' + +this.velocity.y.toFixed(2), this.x + 20, this.y + 20);
-		ctx.restore();
-		ctx.closePath();
-
-		// Прорисвока координат
-		ctx.beginPath();
-		ctx.save();
-		ctx.font = "10pt Courier New";
-		ctx.shadowBlur = 15;
-		ctx.shadowColor = this.color;
-		ctx.fillStyle = this.color;
-		ctx.fillText('x:' + +this.x.toFixed(2), this.x + 20, this.y + 40);
-		ctx.fillText('y:' + +this.y.toFixed(2), this.x + 20, this.y + 60);
 		ctx.restore();
 		ctx.closePath();
 	}
@@ -312,6 +295,8 @@ function drawMiddleLine() {
 	ctx.setLineDash([10, 10]);
 	ctx.moveTo(canvas.width / 2, 0);
 	ctx.lineTo(canvas.width / 2, canvas.height);
+	// ctx.moveTo(0, canvas.height / 2);
+	// ctx.lineTo(canvas.width, canvas.height / 2);
 	ctx.strokeStyle = 'gray';
 	ctx.stroke();
 	ctx.restore();
@@ -398,7 +383,7 @@ function drawBallSpeed() {
 function drawTimer() {
 	ctx.beginPath();
 	ctx.save();
-	ctx.font = "30pt Courier New";
+	ctx.font = "50pt Courier New";
 	ctx.shadowBlur = 15;
 	if (timer > 10) {
 		ctx.shadowColor = '#58FF4D';
@@ -410,9 +395,52 @@ function drawTimer() {
 		ctx.shadowColor = '#F50338';
 		ctx.fillStyle = '#F50338'
 	}
-	ctx.fillText('Timer: ' + timer, canvas.width / 2 - ctx.measureText('Timer: ' + timer).width / 2, canvas.height - 100);
+	ctx.fillText(timer, canvas.width / 2 - ctx.measureText(timer).width / 2, canvas.height - 100);
 	ctx.restore();
 	ctx.closePath();
+}
+
+function drawInformation() {
+	ctx.beginPath();
+	ctx.save();
+	ctx.font = "bold 10pt Courier New";
+	ctx.shadowBlur = 15;
+	ctx.shadowColor = 'gray';
+	ctx.fillStyle = 'gray';
+	ctx.fillText('current number of balls: ' + balls.length, 20, 20);
+	ctx.fillText('total number of balls: ' + (+boards[0].numberOfWins + +boards[1].numberOfWins + +balls.length), 20, 40);
+	ctx.fillText('left board Y: ' + boards[0].y.toFixed(1), 20, 60);
+	ctx.fillText('left board height: ' + boards[0].height, 20, 80);
+	ctx.fillText('right board Y: ' + boards[1].y.toFixed(1), 20, 100);
+	ctx.fillText('right board height: ' + boards[1].height, 20, 120);
+	ctx.fillText('balls[0].x: ' + balls[0].x, 20, 140);
+	ctx.fillText('balls[0].y: ' + balls[0].y, 20, 160);
+	ctx.fillText('balls[0].vx: ' + balls[0].velocity.x, 20, 180);
+	ctx.fillText('balls[0].vy: ' + balls[0].velocity.y, 20, 200);
+	ctx.fillText('balls[0].angle: ' + balls[0].angle, 20, 220);
+	ctx.fillText('balls[0].speed: ' + balls[0].speed, 20, 240);
+	ctx.fillText('balls[0].acceleration: ' + balls[0].acceleration, 20, 260);
+	ctx.fillText('balls[0].mass: ' + balls[0].mass, 20, 280);
+	ctx.fillText('balls[0].color: ' + balls[0].color, 20, 300);
+	ctx.restore();
+	if (balls[0].x == undefined) {
+		console.log(balls.length);
+	}
+
+	ctx.save();
+	ctx.moveTo(balls[0].x, 0);
+	ctx.lineTo(balls[0].x, canvas.height);
+	ctx.moveTo(0, balls[0].y);
+	ctx.lineTo(canvas.width, balls[0].y);
+	ctx.setLineDash([5, 5]);
+	ctx.strokeStyle = 'gray';
+	ctx.stroke();
+	ctx.restore();
+	
+	
+	ctx.closePath();
+
+
 }
 
 // Начальная инициализация объектов
@@ -432,9 +460,9 @@ function pushBoards() {
 		let color = boardColors[i];
 		let mass = 1;
 		let speed = 0;
-		let acceleration = 0.1;
+		let acceleration = 0.05;
 		let x = (i == 0) ? 0 : canvas.width - width;
-		let y = canvas.height / 2;
+		let y = canvas.height / 2 - height / 2;
 
 		boards.push(new Board(i, x, y, width, height, mass, speed, acceleration, color));
 	}
@@ -496,6 +524,9 @@ function animate() {
 	drawMaxSpeed();
 	drawMiddleLine();
 	drawTimer()
+	if (developerMode) {
+		drawInformation();
+	}
 
 	if (sKeyDown) {
 		boards[0].y += 5 + boards[0].acceleration;
@@ -528,15 +559,17 @@ function animate() {
 
 animate();
 
-setInterval(function (argument) {
+function interval (argument) {
 	timer--;
 	if (timer < 0) {
-		for (let i = 0; i < balls[i].length; i++) {
+		for (let i = 0; i < balls.length; i++) {
 			balls[i].UpdateVelocity();
 		}
 		timer = 45;
 	}
-}, 1000);
+}
+
+timerId = setInterval(interval, 1000);
 
 function randomIntFromRange(min, max) {
 	return Math.floor(Math.random() * (max - min) + min);
