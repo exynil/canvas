@@ -1,0 +1,87 @@
+
+
+
+
+// Тест
+
+// function drawCenter() {
+// 	ctx.beginPath();
+// 	ctx.save();
+// 	ctx.lineCap = 'round';
+// 	ctx.setLineDash([10, 10]);
+// 	ctx.moveTo(canvas.width / 2, 0);
+// 	ctx.lineTo(canvas.width / 2, canvas.height);
+// 	ctx.strokeStyle = 'gray';
+// 	ctx.stroke();
+// 	ctx.restore();
+// 	ctx.closePath();
+
+// 	ctx.beginPath();
+// 	ctx.save();
+// 	ctx.lineCap = 'round';
+// 	ctx.setLineDash([10, 10]);
+// 	ctx.moveTo(0, canvas.height / 2);
+// 	ctx.lineTo(canvas.width, canvas.height / 2);
+// 	ctx.strokeStyle = 'gray';
+// 	ctx.stroke();
+// 	ctx.restore();
+// 	ctx.closePath();
+// }
+
+// drawCenter();
+
+
+// var x, y;
+// var angle = 0;
+// var radius = 1;
+// var wrapX = innerWidth / 2;
+// var wrapY = innerHeight / 2;
+// var color = randomColor();
+
+// function test() {
+// 	// x = wrapX + Math.cos(angle) * radius;
+// 	// y = wrapY + Math.sin(angle) * radius;
+// 	x = Math.cos(angle) * radius;
+// 	y = Math.sin(angle) * radius;
+// 	ctx.beginPath();
+// 	ctx.save();
+// 	ctx.moveTo(x, y);
+// 	ctx.lineWidth = 2;
+// 	ctx.lineTo(x + 1, y + 1);
+// 	ctx.strokeStyle = color;
+// 	ctx.stroke();
+// 	ctx.restore();
+// 	ctx.closePath();
+// 	angle = +angle.toFixed(2);
+// 	console.log(angle + ', x: ' + x.toFixed(2) + ', y: ' + y.toFixed(2));
+// 	angle += 0.01;
+// 	if (angle > 6.28) {
+// 		color = randomColor();
+// 		angle = 0;
+// 	}
+	
+// }
+
+// setInterval(test, 20);
+
+// var num;
+
+// function test() {
+// 	num = (Math.random() * 6.28).toFixed(2);
+// 	if (num == 6.28) {
+// 		ctx.beginPath();
+// 		ctx.save();
+// 		ctx.moveTo(0, canvas.height / 2);
+// 		ctx.lineWidth = 2;
+// 		ctx.lineTo(canvas.width, canvas.height / 2);
+// 		ctx.strokeStyle = 'red';
+// 		ctx.stroke();
+// 		ctx.restore();
+// 		ctx.closePath();
+// 		console.log('-------------')
+// 	}
+// 	console.log(num);
+	
+// }
+
+// setInterval(test, 1);

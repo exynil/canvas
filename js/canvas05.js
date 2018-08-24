@@ -34,7 +34,7 @@ addEventListener('keydown', function(event) {
 				cancelAnimationFrame(animationId);
 				animationState = false;
 				ctx.save();
-				ctx.fillStyle = 'rgba(0, 0, 0,0.8)';
+				ctx.fillStyle = 'rgba(0, 0, 0,0.2)';
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 				ctx.restore();
 				ctx.save();
@@ -58,17 +58,14 @@ addEventListener('keydown', function(event) {
 			pushBalls(1);
 			break;
 		case 'KeyR':
-			redirectAllBalls();
-			break;
-		case 'Numpad1':
 			for (let i = 0; i < balls.length; i++) {
-				localStorage.setItem(i, JSON.stringify(balls[i]));
+				balls[i].UpdateVelocity();
 			}
+			console.log(event.code);
+			console.log('')
 			break;
-		case 'Numpad2':
-			for (let i = 0; i < balls.length; i++) {
-				balls[i] = JSON.parse(localStorage.getItem(i));
-			}
+		case 'Numpad0':
+
 			break;
 		default:
 			// console.log(event.code);
@@ -158,10 +155,18 @@ class Ball {
 		this.speed = speed;
 		this.acceleration = acceleration;
 		this.color = color;
+		this.angle = (Math.random() * 6.28).toFixed(2);
 		this.velocity = {
-			x: Math.random() - 0.5,
-			y: Math.random() - 0.5
+			x: Math.cos(this.angle),
+			y: Math.sin(this.angle)
 		}
+	}
+
+	UpdateVelocity() {
+		this.angle = (Math.random() * 6.28).toFixed(2);
+		this.velocity.x = Math.cos(this.angle);
+		this.velocity.y = Math.sin(this.angle);
+		console.log('ИД: ' + this.id + ' запустил UpdateVelocity()');
 	}
 
 	Update(balls) {
@@ -301,17 +306,16 @@ function drawResult() {
 }
 
 function drawMiddleLine() {
-			ctx.beginPath();
-			ctx.save();
-			ctx.beginPath();
-			ctx.lineCap = 'round';
-			ctx.setLineDash([10, 10]);
-			ctx.moveTo(canvas.width / 2, 0);
-			ctx.lineTo(canvas.width / 2, canvas.height);
-			ctx.strokeStyle = 'gray';
-			ctx.stroke();
-			ctx.restore();
-			ctx.closePath();
+	ctx.beginPath();
+	ctx.save();
+	ctx.lineCap = 'round';
+	ctx.setLineDash([10, 10]);
+	ctx.moveTo(canvas.width / 2, 0);
+	ctx.lineTo(canvas.width / 2, canvas.height);
+	ctx.strokeStyle = 'gray';
+	ctx.stroke();
+	ctx.restore();
+	ctx.closePath();
 }
 
 // Прорисовка линий между доской и мячом
@@ -444,8 +448,8 @@ function pushBalls(numberOfBalls) {
 			let radius = 15;
 			let color = randomColor();
 			let mass = 1;
-			let speed = 20;
-			let acceleration = 0.02;
+			let speed = 5;
+			let acceleration = 0.01;
 			let x = randomIntFromRange(canvas.width / 2 - 40, canvas.width / 2 + 40);
 			let y = randomIntFromRange(radius, canvas.height - radius);
 
@@ -464,14 +468,6 @@ function pushBalls(numberOfBalls) {
 		// balls.push(new Ball(0, canvas.width / 2, canvas.height / 2, 15, 1, 8, 0.1, 'lightgreen'));
 		// balls[0].velocity.x = 0;
 		// balls[0].velocity.y = 1;
-	}
-}
-
-// Изменение вектора движения всех мячиков
-function redirectAllBalls() {
-	for (let i = 0; i < balls.length; i++) {
-		balls[i].velocity.x = Math.random() - 0.5;
-		balls[i].velocity.y = Math.random() - 0.5;
 	}
 }
 
@@ -535,7 +531,9 @@ animate();
 setInterval(function (argument) {
 	timer--;
 	if (timer < 0) {
-		redirectAllBalls();
+		for (let i = 0; i < balls[i].length; i++) {
+			balls[i].UpdateVelocity();
+		}
 		timer = 45;
 	}
 }, 1000);
