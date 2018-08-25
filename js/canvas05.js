@@ -270,6 +270,7 @@ class Timer {
 		this.backgroundColor = '#333';
 		this.color = '#00ff00';
 		this.progressWidth = canvas.width;
+		this.progressHeight = 2;
 		this.currentPosition = canvas.width;
 		this.colorRange = 0;
 		this.percent;
@@ -299,7 +300,7 @@ class Timer {
 		ctx.beginPath();
 		ctx.save();
 		ctx.fillStyle = '#444';
-		ctx.fillRect(0, 0, canvas.width, 4);
+		ctx.fillRect(0, 0, canvas.width, this.progressHeight);
 		this.progressWidth = this.currentSeconds * canvas.width / this.initialSeconds;
 		if (this.progressWidth > canvas.width / 2) {
 			this.currentPosition = this.progressWidth - canvas.width / 2;
@@ -307,7 +308,7 @@ class Timer {
 			this.color = (this.percent * 255 / 100).toFixed(0);
 			this.color = (this.color - 255) * -1
 			ctx.fillStyle = 'rgb(' + this.color + ', 255, 0)';
-			ctx.fillRect(0, 0, this.progressWidth, 4);
+			ctx.fillRect(0, 0, this.progressWidth, this.progressHeight);
 			ctx.fill();
 
 
@@ -317,7 +318,7 @@ class Timer {
 			this.percent = this.currentPosition * 100 / (canvas.width / 2);
 			this.color = (this.percent * 255 / 100).toFixed(0);
 			ctx.fillStyle = 'rgb(255, ' + this.color + ', 0)';
-			ctx.fillRect(0, 0, this.progressWidth, 4);
+			ctx.fillRect(0, 0, this.progressWidth, this.progressHeight);
 			ctx.fill();
 		}
 
