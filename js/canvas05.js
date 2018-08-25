@@ -14,7 +14,6 @@ var animationId;
 var animationState = true;
 var limitation = 5;
 var developerMode = true;
-var progressColor = '#00ff00';
 var timer;
 
 canvas.width = innerWidth;
@@ -299,20 +298,18 @@ class Timer {
 	Draw() {
 		ctx.beginPath();
 		ctx.save();
-		ctx.fillStyle = '#333';
+		ctx.fillStyle = '#444';
 		ctx.fillRect(0, 0, canvas.width, 4);
 		this.progressWidth = this.currentSeconds * canvas.width / this.initialSeconds;
 		if (this.progressWidth > canvas.width / 2) {
 			this.currentPosition = this.progressWidth - canvas.width / 2;
-			// console.log(position);
 			this.percent = this.currentPosition * 100 / (canvas.width / 2);
 			this.color = (this.percent * 255 / 100).toFixed(0);
 			this.color = (this.color - 255) * -1
 			ctx.fillStyle = 'rgb(' + this.color + ', 255, 0)';
 			ctx.fillRect(0, 0, this.progressWidth, 4);
 			ctx.fill();
-			ctx.restore();
-			ctx.closePath();
+
 
 			
 		} else {
@@ -322,9 +319,10 @@ class Timer {
 			ctx.fillStyle = 'rgb(255, ' + this.color + ', 0)';
 			ctx.fillRect(0, 0, this.progressWidth, 4);
 			ctx.fill();
-			ctx.restore();
-			ctx.closePath();
 		}
+
+		ctx.restore();
+		ctx.closePath();
 
 		if (this.currentSeconds < 3) {
 			ctx.beginPath();
@@ -454,31 +452,39 @@ function drawBallSpeed() {
 }
 
 function drawInformation() {
+	let interval = 15;
+	let verticalMargin = 15;
 	ctx.beginPath();
 	ctx.save();
 	ctx.font = "bold 10pt Courier New";
 	ctx.shadowBlur = 15;
 	ctx.shadowColor = 'gray';
 	ctx.fillStyle = 'gray';
-	ctx.fillText('current number of balls: ' + balls.length, 20, 20);
-	ctx.fillText('total number of balls: ' + (+boards[0].numberOfWins + +boards[1].numberOfWins + +balls.length), 20, 40);
-	ctx.fillText('left board Y: ' + boards[0].y.toFixed(1), 20, 60);
-	ctx.fillText('left board height: ' + boards[0].height, 20, 80);
-	ctx.fillText('right board Y: ' + boards[1].y.toFixed(1), 20, 100);
-	ctx.fillText('right board height: ' + boards[1].height, 20, 120);
+	ctx.fillText('current number of balls: ' + balls.length, 20, interval += verticalMargin);
+	ctx.fillText('total number of balls: ' + (+boards[0].numberOfWins + +boards[1].numberOfWins + +balls.length), 20, interval += verticalMargin);
+	ctx.fillText('left board Y: ' + boards[0].y.toFixed(1), 20, interval += verticalMargin);
+	ctx.fillText('left board height: ' + boards[0].height, 20, interval += verticalMargin);
+	ctx.fillText('right board Y: ' + boards[1].y.toFixed(1), 20, interval += verticalMargin);
+	ctx.fillText('right board height: ' + boards[1].height, 20, interval += verticalMargin);
 	if (balls[0] != undefined) {
-		ctx.fillText('balls[0].x: ' + balls[0].x, 20, 140);
-		ctx.fillText('balls[0].y: ' + balls[0].y, 20, 160);
-		ctx.fillText('balls[0].vx: ' + balls[0].velocity.x, 20, 180);
-		ctx.fillText('balls[0].vy: ' + balls[0].velocity.y, 20, 200);
-		ctx.fillText('balls[0].angle: ' + balls[0].angle, 20, 220);
-		ctx.fillText('balls[0].speed: ' + balls[0].speed, 20, 240);
-		ctx.fillText('balls[0].acceleration: ' + balls[0].acceleration, 20, 260);
-		ctx.fillText('balls[0].mass: ' + balls[0].mass, 20, 280);
-		ctx.fillText('balls[0].color: ' + balls[0].color, 20, 300);
-		ctx.restore();
-		ctx.closePath();
+		ctx.fillText('balls[0].x: ' + balls[0].x, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].y: ' + balls[0].y, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].vx: ' + balls[0].velocity.x, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].vy: ' + balls[0].velocity.y, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].angle: ' + balls[0].angle, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].speed: ' + balls[0].speed, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].acceleration: ' + balls[0].acceleration, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].mass: ' + balls[0].mass, 20, interval += verticalMargin);
+		ctx.fillText('balls[0].color: ' + balls[0].color, 20, interval += verticalMargin);
+
 	}
+	ctx.fillText('timer initial seconds: ' + timer.initialSeconds, 20, interval += verticalMargin);
+	ctx.fillText('timer current seconds: ' + timer.currentSeconds, 20, interval += verticalMargin);
+	ctx.fillText('timer color: ' + timer.color, 20, interval += verticalMargin);
+	ctx.fillText('timer progressWidth: ' + timer.progressWidth, 20, interval += verticalMargin);
+	ctx.fillText('timer currentPosition: ' + timer.currentPosition, 20, interval += verticalMargin);
+	ctx.restore();
+	ctx.closePath();
 	if (balls[0] != undefined) {
 		ctx.beginPath();
 		ctx.save();
@@ -492,20 +498,13 @@ function drawInformation() {
 		ctx.restore();
 		ctx.closePath();
 	}
-
-	
-	
-	
-	
-
-
 }
 
 // Начальная инициализация объектов
 function init() {
 	pushBoards();
 	pushBalls(numberOfBalls);
-	timer = new Timer(8);
+	timer = new Timer(60);
 }
 
 init();
