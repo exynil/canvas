@@ -20,12 +20,6 @@ addEventListener('mousemove', function(event) {
     mouse.y = event.clientY;
 });
 
-addEventListener('keydown', function(event) {
-    if (event.keyCode == 27) {
-        location.href = '../index.html';
-    }
-});
-
 canvas.addEventListener('mouseleave', function(event) {
     mouse.x = -999;
     mouse.y = -999;

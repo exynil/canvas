@@ -5,11 +5,25 @@ var shieldColors = ['#00E8FF', '#FF7400'];
 var particles = [];
 
 canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.height = 700;
 
 var mouse = {
     x: canvas.width / 2,
     y: canvas.height / 2
+}
+
+canvas.onmousedown = function(event) {
+    canvas.onmousemove = function(event) {
+        particles.forEach(particle => {
+            particle.Update();
+        });
+    }
+    canvas.onmouseup = function(event) {
+        canvas.onmousemove = null;
+        particles[0].lastMouse.x = null;
+        particles[0].lastMouse.y = null;
+
+    }
 }
 
 addEventListener('resize', function() {
@@ -22,46 +36,37 @@ addEventListener('mousemove', function(event) {
     mouse.y = event.clientY;
 });
 
-addEventListener('keydown', function(event) {
-    if (event.keyCode == 27) {
-        location.href = '../index.html';
-    }
-});
-
 class Particle {
-    constructor(x, y, radius, color) {
+    constructor(x, y, color) {
         this.x = x;
         this.y = y;
-        this.radius = radius;
         this.color = color;
-        this.radians = Math.random() * Math.PI * 2;
-        this.velocity = randomIntFromRange(1, 6) / 100;
-        this.distanceFromCenter = randomIntFromRange(50, 120);
-        this.lastMouse = {x: this.x, y: this.y};
+        this.lastMouse = {
+            x: null,
+            y: null
+        };
     };
     Update() {
-        const lastPoint = {
-            x: this.x,
-            y: this.y
-        }
-
-        this.radians += this.velocity;
-        this.lastMouse.x += (mouse.x - this.lastMouse.x) * 0.05;
-        this.lastMouse.y += (mouse.y - this.lastMouse.y) * 0.05;
-        this.x = this.lastMouse.x +  Math.cos(this.radians) * this.distanceFromCenter;
-        this.y = this.lastMouse.y + Math.sin(this.radians) * this.distanceFromCenter;
-        this.Draw(lastPoint);
+        this.x = mouse.x;
+        this.y = mouse.y;
+        this.Draw();
+        this.lastMouse.x = this.x;
+        this.lastMouse.y = this.y;
     }
 
-    Draw(lastPoint) {
+    Draw() {
         ctx.beginPath();
         ctx.save();
         ctx.shadowBlur = 10;
         ctx.shadowColor = this.color;
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = this.radius;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
-        ctx.moveTo(lastPoint.x, lastPoint.y);
+        if (this.lastMouse.x == null) {
+            ctx.moveTo(this.x, this.y);
+        } else {
+            ctx.moveTo(this.lastMouse.x, this.lastMouse.y);
+        }
         ctx.lineTo(this.x, this.y);
         ctx.stroke();
         ctx.restore();
@@ -70,27 +75,34 @@ class Particle {
 }
 
 function init() {
-    for (let i = 0; i < 50; i++) {
-        const radius = randomIntFromRange(2, 6);
+    for (let i = 0; i < 1; i++) {
         const color = randomColorFromArray(colors);
         // const color = randomColor();
-        particles.push(new Particle(mouse.x, mouse.y, radius, color));
+        particles.push(new Particle(mouse.x, mouse.y, color));
     }
+}
+
+document.getElementById('color').onchange = function() {
+    particles[0].color = this.value;
+}
+
+document.getElementById('clear').onclick = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 init();
 
-function animate() {
-    requestAnimationFrame(animate);
-    ctx.fillStyle = 'rgba(0, 0, 0,0.05)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+// function animate() {
+//     requestAnimationFrame(animate);
+//     // ctx.fillStyle = 'rgba(0, 0, 0,0.05)';
+//     // ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    particles.forEach(particle => {
-        particle.Update();
-    });
-}
+//     particles.forEach(particle => {
+//         particle.Update();
+//     });
+// }
 
-animate();
+// animate();
 
 function randomIntFromRange(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
