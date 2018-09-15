@@ -76,7 +76,7 @@ function init() {
 
 	for (let i = 0; i < 4; i++) {
 		const radius = 8;
-		const color = randomColor(colors);
+		const color = randomColorFromArray(colors);
 		const mass = 1;
 		const speed = 3;
 		const acceleration = 0.1;
@@ -117,8 +117,26 @@ function randomIntFromRange(min, max) {
 	return Math.floor(Math.random() * (max - min) + min);
 }
 
-function randomColor(colors) {
+function randomColorFromArray(colors) {
 	return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function randomColor() {
+	let redHex = Math.floor(Math.random() * 255).toString(16);
+	let greenHex = Math.floor(Math.random() * 255).toString(16);
+	let blueHex = Math.floor(Math.random() * 255).toString(16);
+	if (redHex.length == 1) {
+		redHex = '0' + redHex;
+	}
+	if (greenHex.length == 1) {
+		greenHex = '0' + greenHex;
+	}
+
+	if (blueHex.length == 1) {
+		blueHex = '0' + blueHex;
+	}
+
+	return '#' + redHex + greenHex + blueHex;
 }
 
 function getDistance(x1, y1, x2, y2) {
