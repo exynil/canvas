@@ -1,2 +1,2 @@
-# canvas
-Анимации с использованием Canvas и Javascript
+# Canvas
+Анимации с использованием Canvas и Javascript.
